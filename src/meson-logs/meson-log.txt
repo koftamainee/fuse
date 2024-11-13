@@ -1,0 +1,11 @@
+Build started at 2024-11-14T01:03:44.157023
+Main binary: /usr/bin/python
+Build Options: 
+Python system: Linux
+The Meson build system
+Version: 1.6.0
+Source dir: /home/kofta/dev/fuse
+Build dir: /home/kofta/dev/fuse/src
+Build type: native build
+
+ERROR: No statements in code.
