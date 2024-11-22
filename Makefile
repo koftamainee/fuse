@@ -1,33 +1,41 @@
+SRC_DIR = src
 BUILD_DIR = build
-BUILD_TYPE ?= Release
+OBJ_DIR = $(BUILD_DIR)/obj
+
+CC = clang
+
+CFLAGS = -O2 -std=c99
+
+SRCS = $(wildcard $(SRC_DIR)/*.c)
+OBJS = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SRCS))
+
+TOTAL := $(shell echo $(SRCS) | wc -w)
+
 TARGET = fuse
-LLDB = lldb
+TARGET_NAME = Fuse
 
-TOOLCHAIN_LINUX = ../cmake/toolchain_linux.cmake
-TOOLCHAIN_WINDOWS = ../cmake/toolchain_windows.cmake
+all: message compile
 
-all: debug
+message:
+	@echo "😄  Hello, $(USER). Welcome to $(TARGET_NAME) build system."
+	@echo "🚀  Compilation Started..."
 
-.PHONY: clean
+compile: $(OBJS)
+	@mkdir -p $(BUILD_DIR)
+	@echo "🔧  Linking $(TARGET_NAME)..."
+	$(CC) $(CFLAGS) -o $(BUILD_DIR)/$(TARGET) $(OBJS)
 
-# Override BUILD_TYPE for debug build
-debug: BUILD_TYPE = Debug
-debug: build_linux
-	cd $(BUILD_DIR)/x86_64 && $(LLDB) $(TARGET)
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
+	@mkdir -p $(OBJ_DIR)
+	@CURRENT=$$(expr $(shell echo $(OBJS) | tr ' ' '\n' | grep -n "$@" | cut -d: -f1) + 0); \
+	echo "[$$CURRENT/$(TOTAL)] Building C object $@"; \
+	$(CC) $(CFLAGS) -c $< -o $@
 
-run: BUILD_TYPE = Debug
-run: build_linux
-	cd $(BUILD_DIR)/x86_64 && ./$(TARGET)
-
-build_linux:
-	mkdir -p $(BUILD_DIR)
-	cd $(BUILD_DIR) && cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE=$(TOOLCHAIN_LINUX) -DCMAKE_BUILD_TYPE=${BUILD_TYPE} ..
-	cd $(BUILD_DIR) && ninja
-
-build_windows:
-	mkdir -p $(BUILD_DIR)
-	cd $(BUILD_DIR) && cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE=$(TOOLCHAIN_WINDOWS) -DCMAKE_BUILD_TYPE=${BUILD_TYPE} ..
-	cd $(BUILD_DIR) && ninja
-	
 clean:
 	rm -rf $(BUILD_DIR)
+
+configure:
+	@./x.sh
+
+.PHONY: all clean message configure
+
