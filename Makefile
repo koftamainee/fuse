@@ -35,7 +35,11 @@ clean:
 	rm -rf $(BUILD_DIR)
 
 configure:
-	@./x.sh
+	@if command -v python3 >/dev/null 2>&1; then \
+		./x.py; \
+	else \
+		./x.sh; \
+	fi
 
 .PHONY: all clean message configure
 

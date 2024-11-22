@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 cleanup() {
     echo -e "\n🛑  Process interrupted. Exiting gracefully..."
