@@ -1,6 +1,8 @@
 SRC_DIR = src
 BUILD_DIR = build
 OBJ_DIR = $(BUILD_DIR)/obj
+CONFIG_FILE = install_config.ini
+SERTIFICATE_FILE = certificate.txt
 
 CC = cc
 
@@ -19,6 +21,7 @@ COLOR_GREEN=\033[32m
 COLOR_RED=\033[31m
 COLOR_YELLOW=\033[33m
 
+# Binary compilation
 compile: message check_cc $(TARGET)
 
 message:
@@ -31,17 +34,28 @@ $(TARGET): $(OBJS)
 	@$(CC) $(CFLAGS) -o $(BUILD_DIR)/$(TARGET) $(OBJS)
 	@echo -e "[$(TOTAL)/$(TOTAL)] Built target $(TARGET)"
 	
-
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	@mkdir -p $(OBJ_DIR)
 	@CURRENT=$$(expr $(shell echo $(OBJS) | tr ' ' '\n' | grep -n "$@" | cut -d: -f1) + 0); \
 	echo -e "[$$CURRENT/$(TOTAL)] $(COLOR_GREEN)Building C object $@$(COLOR_RESET)"; \
 	$(CC) $(CFLAGS) -c $< -o $@
 
-clean:
-	@echo -e "🧹  $(COLOR_YELLOW)Cleaning build directory$(COLOR_RESET)"
-	@rm -rf $(BUILD_DIR)
+# Docs and License
+user_man:
+# TODO
 
+in_instruct:
+# TODO
+
+an_instruct:
+# TODO
+
+license:
+# TODO
+
+docs: user_man in_instrucy an_instruct
+
+# Configuration and checkings
 configure:
 	./x.sh
 
@@ -54,7 +68,40 @@ check_cc:
 		exit 1; \
 	fi
 
-.PHONY: all clean message configure
-
-install: compile
+# Installation
+install: $(BUILD_DIR)/$(TARGET)
 	./build/fuse
+
+all: compile docs
+
+# Cleaning
+clean_tmp:
+	@echo -e "🧹  $(COLOR_YELLOW)Cleaning temporary files$(COLOR_RESET)"
+	@rm -rf $(OBJ_DIR)
+
+clean_config:
+	@echo -e "🧹  $(COLOR_YELLOW)Cleaning config file$(COLOR_RESET)"
+	@rm -rf $(CONFIG_FILE)
+
+clean_certificate:
+	@echo -e "🧹  $(COLOR_YELLOW)Cleaning temporary certificate file$(COLOR_RESET)"
+	@rm -rf $(SERTIFICATE_FILE)
+
+clean_compile: clean_tmp
+	@echo -e "🧹  $(COLOR_YELLOW)Cleaning fuse binary$(COLOR_RESET)"
+	@rm -rf $(TARGET)
+
+clean: clean_tmp clean_certificate clean_config 
+
+clean_all: clean clean_compile
+
+uninstall:
+# TODO
+
+remove: uninstall
+# TODO
+
+remove_all: remove
+# TODO
+
+.PHONY: all clean message configure

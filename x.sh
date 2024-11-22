@@ -1,5 +1,10 @@
 #!/bin/sh
 
+COLOR_RESET=\033[0m
+COLOR_GREEN=\033[32m
+COLOR_RED=\033[31m
+COLOR_YELLOW=\033[33m
+
 cleanup() {
     echo -e "\n🛑  Process interrupted. Exiting gracefully..."
     exit 0
@@ -67,6 +72,7 @@ write_config() {
     echo "temp_path=$temp_path" >> "$config_file"
     echo "save_path=$save_path" >> "$config_file"
     echo "docs_path=$docs_path" >> "$config_file"
+    echo "bin_path=$bin_path" >> "$config_file"
 
     echo >> "$config_file"
     echo "[license]" >> "$config_file"
@@ -90,7 +96,7 @@ while true; do
 done
 
 while true; do
-    read -p "📱  Enter your phone number +(8-15 numbers): " phone
+    read -p "📱  Enter your phone number. (Start with \"+\", then 8-15 numbers): " phone
     if validate_phone "$phone"; then
         break
     else
@@ -100,6 +106,9 @@ done
 
 
 echo "🔧  Please specify the installation paths."
+
+read -p "⚙️  Enter path for the Fuse installation [/usr/bin]: " cert_path
+bin_path=${cert_path:-/usr/bin}
 
 read -p "📂  Enter path for the certificate installation [/usr/etc/$USER/fuse]: " cert_path
 cert_path=${cert_path:-/usr/etc/$USER/fuse}
@@ -126,14 +135,16 @@ create_directory "$cert_path"
 create_directory "$temp_path"
 create_directory "$save_path"
 create_directory "$docs_path"
+create_directory "$bin_path"
 
 write_certificate "$certificate"
 
-write_config "install.config"
+write_config
 
 echo -e "\nSetup completed:"
-echo "✅  Certificate will be saved in $cert_path/certificate.txt"
-echo "📂  Temporary files will be stored in $temp_path"
-echo "💾  Save files will be stored in $save_path"
-echo "📚  Documentation will be stored in $docs_path"
+echo -e "\033[32m📦  Fuse will be installed in $bin_path" # set green color
+echo -e "✅  Certificate will be saved in $cert_path"
+echo -e "📂  Temporary files will be stored in $temp_path"
+echo -e "💾  Save files will be stored in $save_path"
+echo -e "📚  Documentation will be stored in $docs_path\033[0m" # reset color
 echo -e "\n⚡️  Please now run \"make && sudo make install\" to install Fuse"
