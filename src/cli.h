@@ -23,6 +23,8 @@ typedef struct {
     bool show_version;          // -v, --version
 } CLIOptions;
 
+void clear_screen();
+
 err_t parse_cli_arguments(int argc, char *argv[], CLIOptions *options);
 
 void print_help();

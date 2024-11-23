@@ -88,3 +88,5 @@ void print_version() {
            "[+git]\nhttps://github.com/koftamainee/fuse.git\n" COLOR_RESET,
            PROJECT_VERSION);
 }
+
+void clear_screen() { system("clear"); }
