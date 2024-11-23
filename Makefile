@@ -134,9 +134,17 @@ endif
 	@sudo ln -sf $(TEMP_PATH) $(BIN_PATH)/temp
 	@sudo ln -sf $(DOCS_PATH) $(BIN_PATH)/docs
 
-	@echo -e "\n$(COLOR_GREEN)✨  Installation done! Have a good day  ✨"
+	@echo -e "🤖  Creating uninstalling scripts"
+	@sudo touch /etc/$(TARGET)/uninstall.sh
+	@sudo chmod +x /etc/$(TARGET)/uninstall.sh
 
-all: compile
+	@sudo touch /etc/$(TARGET)/remove.sh
+	@sudo chmod +x /etc/$(TARGET)/remove.sh
+
+	@sudo touch /etc/$(TARGET)/remove_all.sh
+	@sudo chmod +x /etc/$(TARGET)/remove_all.sh
+
+	@echo -e "\n$(COLOR_GREEN)✨  Installation done! Have a good day  ✨"
 
 # Cleaning
 clean_tmp:
@@ -160,12 +168,16 @@ clean: clean_tmp clean_certificate clean_config
 clean_all: clean clean_compile
 
 uninstall:
+	@echo -e "🧹  $(COLOR_YELLOW)Uninstalling $(TARGET_NAME)$(COLOR_RESET)"
+	@sudo /etc/$(TARGET)/uninstall.sh
+	
+remove:
+	@echo -e "🧹  $(COLOR_YELLOW)Uninstalling $(TARGET_NAME) and deleting logs$(COLOR_RESET)"
+	@sudo /etc/$(TARGET)/remove.sh
 
-remove: uninstall
-# TODO
-
-remove_all: remove
-# TODO
+remove_all:
+	@echo -e "🧹  $(COLOR_YELLOW)Uninstalling $(TARGET_NAME), deleting logs and saves$(COLOR_RESET)"
+	@sudo /etc/$(TARGET)/remove_all.sh
 
 .PHONY: all clean configure check_config init_config_vars install
 
