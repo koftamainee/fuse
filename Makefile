@@ -25,16 +25,12 @@ COLOR_RED=\033[31m
 COLOR_YELLOW=\033[33m
 
 # Binary compilation
-compile: message check_cc $(TARGET)
+compile: message_hello check_config init_config_vars message_start_compilation check_cc $(TARGET)
 
-message:
+message_hello:
 	@echo "👋  Hello, $(USER). Welcome to $(TARGET_NAME) build system."
-	@if [ ! -f install_config.ini ] || [ ! -f certificate.txt ]; then \
-		echo -e "\n$(COLOR_YELLOW)😅  Seems like you haven't configure project yet.$(COLOR_RESET)"; \
-		echo -e "✨  Starting \"x.sh\" script"; \
-		echo -e ""; \
-		./x.sh; \
-	fi
+
+message_start_compilation:
 	@echo "🚀  Compilation Started..."
 
 
@@ -93,11 +89,48 @@ check_pdflatex:
 		exit 1; \
 	fi
 
-# Installation
-install: $(BUILD_DIR)/$(TARGET)
-	./build/fuse
+check_config:
+	@if [ ! -f install_config.ini ] || [ ! -f certificate.txt ]; then \
+		echo -e "\n$(COLOR_YELLOW)😅  Seems like you haven't configure project yet.$(COLOR_RESET)"; \
+		echo -e "✨  Starting \"x.sh\" script"; \
+		echo -e ""; \
+		./x.sh; \
+	fi
 
-all: compile docs
+# Installation
+install: $(BUILD_DIR)/$(TARGET) docs
+ifneq ($(shell id -u),0)
+	@echo -e "✋  $(COLOR_RED)Running \"make install\" require root access$(COLOR_RESET)"
+	@echo -e "🔐  $(COLOR_YELLOW)Entering sudo-enabled environment...$(COLOR_RESET)"
+endif
+	@echo -e "📝  Checking the certificate for correctness"
+# TODO: certificate checking (1 and 2 points)
+
+	@echo -e "🔑  Change certificate owner to root"
+# TODO
+	@echo -e "📁  Creating configs directory"
+	@sudo mkdir -p /etc/$(TARGET)
+	@sudo cp install_config.ini /etc/fuse/config.ini
+
+	@echo -e "🧾  Creating logs directory"
+	@sudo mkdir -p /var/log/$(TARGET)
+
+	@sudo rm -rf /usr/bin/$(TARGET)
+	@echo -e "🏄  Installing $(TARGET_NAME) binary"
+	@sudo cp $(BUILD_DIR)/$(TARGET) $(BIN_PATH)/$(TARGET)
+
+	@echo -e "🔗  Creating symlinks"
+ifneq ($(BIN_PATH),/usr/bin)
+	@sudo ln -sf $(BIN_PATH)/$(TARGET) /usr/bin/$(TARGET)
+endif
+	@sudo ln -sf /etc/$(TARGET) $(BIN_PATH)/etc
+	@sudo ln -sf $(SAVE_PATH) $(BIN_PATH)/saves
+	@sudo ln -sf $(TEMP_PATH) $(BIN_PATH)/temp
+	@sudo ln -sf $(DOCS_PATH) $(BIN_PATH)/docs
+
+	@echo -e "\n$(COLOR_GREEN)✨  Installation done! Have a good day  ✨"
+
+all: compile
 
 # Cleaning
 clean_tmp:
@@ -121,7 +154,6 @@ clean: clean_tmp clean_certificate clean_config
 clean_all: clean clean_compile
 
 uninstall:
-# TODO
 
 remove: uninstall
 # TODO
@@ -129,4 +161,10 @@ remove: uninstall
 remove_all: remove
 # TODO
 
-.PHONY: all clean message configure
+.PHONY: all clean configure check_config init_config_vars install
+
+BIN_PATH  = $(shell awk -F '=' '/bin_path/{print $$2}' install_config.ini)
+CERT_PATH = $(shell awk -F '=' '/cert_path/{print $$2}' install_config.ini)
+TEMP_PATH = $(shell awk -F '=' '/temp_path/{print $$2}' install_config.ini)
+SAVE_PATH = $(shell awk -F '=' '/save_path/{print $$2}' install_config.ini)
+DOCS_PATH = $(shell awk -F '=' '/docs_path/{print $$2}' install_config.ini)

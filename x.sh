@@ -1,9 +1,9 @@
 #!/bin/sh
 
-COLOR_RESET=\033[0m
-COLOR_GREEN=\033[32m
-COLOR_RED=\033[31m
-COLOR_YELLOW=\033[33m
+# COLOR_RESET=\033[0m
+# COLOR_GREEN=\033[32m
+# COLOR_RED=\033[31m
+# COLOR_YELLOW=\033[33m
 
 cleanup() {
     echo -e "\n🛑  Process interrupted. Exiting gracefully..."
@@ -34,8 +34,8 @@ requires_sudo() {
 create_directory() {
     local path="$1"
     if requires_sudo "$path"; then
-        echo "✋  Path $path requires root access."
-        echo "🔐  Entering sudo-enabled environment..."
+        echo -e "\n\033[31m✋  Path $path requires root access. \033[0m"
+        echo -e "\033[33m🔐  Entering sudo-enabled environment...\033[0m"
         sudo mkdir -p "$path"
     else
         mkdir -p "$path"
@@ -68,11 +68,11 @@ write_config() {
     
     echo >> "$config_file"
     echo "[paths]" >> "$config_file"
+    echo "bin_path=$bin_path/fuse" >> "$config_file"
     echo "cert_path=$cert_path" >> "$config_file"
     echo "temp_path=$temp_path" >> "$config_file"
     echo "save_path=$save_path" >> "$config_file"
     echo "docs_path=$docs_path" >> "$config_file"
-    echo "bin_path=$bin_path" >> "$config_file"
 
     echo >> "$config_file"
     echo "[license]" >> "$config_file"
@@ -107,11 +107,11 @@ done
 
 echo "🔧  Please specify the installation paths."
 
-read -p "⚙️  Enter path for the Fuse installation [/usr/bin]: " cert_path
-bin_path=${cert_path:-/usr/bin}
+read -p "⚙️  Enter path for the Fuse installation [/usr/lib]: " bin_path
+bin_path=${bin_path:-/usr/lib}
 
-read -p "📂  Enter path for the certificate installation [/usr/etc/$USER/fuse]: " cert_path
-cert_path=${cert_path:-/usr/etc/$USER/fuse}
+read -p "📂  Enter path for the certificate installation [/usr/etc/fuse]: " cert_path
+cert_path=${cert_path:-/usr/etc/fuse}
 
 read -p "🗃️  Enter path for temporary files [/tmp/$USER/fuse]: " temp_path
 temp_path=${temp_path:-/tmp/$USER/fuse}
@@ -135,7 +135,7 @@ create_directory "$cert_path"
 create_directory "$temp_path"
 create_directory "$save_path"
 create_directory "$docs_path"
-create_directory "$bin_path"
+create_directory "$bin_path/fuse"
 
 write_certificate "$certificate"
 
@@ -146,5 +146,4 @@ echo -e "\033[32m📦  Fuse will be installed in $bin_path" # set green color
 echo -e "✅  Certificate will be saved in $cert_path"
 echo -e "📂  Temporary files will be stored in $temp_path"
 echo -e "💾  Save files will be stored in $save_path"
-echo -e "📚  Documentation will be stored in $docs_path\033[0m" # reset color
-echo -e "\n⚡️  Please now run \"make && sudo make install\" to install Fuse"
+echo -e "📚  Documentation will be stored in $docs_path\033[0m\n" # reset color
