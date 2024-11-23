@@ -81,7 +81,7 @@ write_config() {
 }
 
 
-echo -e "🌟 Welcome to the Fuse setup script! Let's get everything ready for you!\n"
+echo -e "🌟  Welcome to the Fuse setup script! Let's get everything ready for you!\n"
 echo "📝  Please enter your details."
 
 read -p "👤  Enter your full name: " full_name
