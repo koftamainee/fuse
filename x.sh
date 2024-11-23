@@ -31,16 +31,16 @@ requires_sudo() {
 }
 
 
-create_directory() {
-    local path="$1"
-    if requires_sudo "$path"; then
-        echo -e "\n\033[31m✋  Path $path requires root access. \033[0m"
-        echo -e "\033[33m🔐  Entering sudo-enabled environment...\033[0m"
-        sudo mkdir -p "$path"
-    else
-        mkdir -p "$path"
-    fi
-}
+# create_directory() {
+#     local path="$1"
+#     if requires_sudo "$path"; then
+#         echo -e "\n\033[31m✋  Path $path requires root access. \033[0m"
+#         echo -e "\033[33m🔐  Entering sudo-enabled environment...\033[0m"
+#         sudo mkdir -p "$path"
+#     else
+#         mkdir -p "$path"
+#     fi
+# }
 
 
 write_certificate() {
@@ -131,11 +131,11 @@ Phone: $phone\n
 License: MIT License\n
 Install Date: $install_date\n"
 
-create_directory "$cert_path"
-create_directory "$temp_path"
-create_directory "$save_path"
-create_directory "$docs_path"
-create_directory "$bin_path/fuse"
+# create_directory "$cert_path"
+# create_directory "$temp_path"
+# create_directory "$save_path"
+# create_directory "$docs_path"
+# create_directory "$bin_path"/fuse
 
 write_certificate "$certificate"
 

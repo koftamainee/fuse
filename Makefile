@@ -18,6 +18,7 @@ TOTAL := $(shell echo $(SRCS) | wc -w)
 
 TARGET = fuse
 TARGET_NAME = Fuse
+TARGET_PATH = $(BUILD_DIR)/$(TARGET)
 
 COLOR_RESET=\033[0m
 COLOR_GREEN=\033[32m
@@ -25,7 +26,7 @@ COLOR_RED=\033[31m
 COLOR_YELLOW=\033[33m
 
 # Binary compilation
-compile: message_hello check_config init_config_vars message_start_compilation check_cc $(TARGET)
+compile: message_hello check_config init_config_vars message_start_compilation check_cc $(TARGET_PATH)
 
 message_hello:
 	@echo "👋  Hello, $(USER). Welcome to $(TARGET_NAME) build system."
@@ -34,7 +35,7 @@ message_start_compilation:
 	@echo "🚀  Compilation Started..."
 
 
-$(TARGET): $(OBJS)
+$(TARGET_PATH): $(OBJS)
 	@mkdir -p $(BUILD_DIR)
 	@echo -e "[$(TOTAL)/$(TOTAL)] $(COLOR_GREEN)Linking C executable $(BUILD_DIR)/$(TARGET)$(COLOR_RESET)"
 	@$(CC) $(CFLAGS) -o $(BUILD_DIR)/$(TARGET) $(OBJS)
@@ -98,23 +99,28 @@ check_config:
 	fi
 
 # Installation
-install: $(BUILD_DIR)/$(TARGET) docs
+install: check_config $(TARGET_PATH) docs
 ifneq ($(shell id -u),0)
 	@echo -e "✋  $(COLOR_RED)Running \"make install\" require root access$(COLOR_RESET)"
 	@echo -e "🔐  $(COLOR_YELLOW)Entering sudo-enabled environment...$(COLOR_RESET)"
 endif
+	@echo -e "📁  Creating directories"
+	@sudo mkdir -p /etc/$(TARGET)
+	@sudo cp install_config.ini /etc/fuse/config.ini
+
+	@sudo mkdir -p /var/log/$(TARGET)
+
+	@sudo mkdir -p $(BIN_PATH)
+	@sudo mkdir -p $(CERT_PATH) && sudo chown $(USER) $(CERT_PATH)
+	@sudo mkdir -p $(TEMP_PATH) && sudo chown $(USER) $(TEMP_PATH)
+	@sudo mkdir -p $(SAVE_PATH) && sudo chown $(USER) $(SAVE_PATH)
+	@sudo mkdir -p $(DOCS_PATH) && sudo chown $(USER) $(DOCS_PATH)
+
 	@echo -e "📝  Checking the certificate for correctness"
 # TODO: certificate checking (1 and 2 points)
 
 	@echo -e "🔑  Change certificate owner to root"
 # TODO
-	@echo -e "📁  Creating configs directory"
-	@sudo mkdir -p /etc/$(TARGET)
-	@sudo cp install_config.ini /etc/fuse/config.ini
-
-	@echo -e "🧾  Creating logs directory"
-	@sudo mkdir -p /var/log/$(TARGET)
-
 	@sudo rm -rf /usr/bin/$(TARGET)
 	@echo -e "🏄  Installing $(TARGET_NAME) binary"
 	@sudo cp $(BUILD_DIR)/$(TARGET) $(BIN_PATH)/$(TARGET)
