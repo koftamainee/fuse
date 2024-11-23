@@ -1,16 +1,47 @@
-#include <stdio.h>
 #include <stdlib.h>
 
-#include "../include/cstring.h"
+#include "../include/errors.h"
+#include "cli.h"
+#include "menu.h"
 
 int main(int argc, char* argv[]) {
-  String str = string_from("Hello world");
-  if (argc == 1) {
-    string_print(str);
-    printf("\nHello from %s!\n", argv[0]);
-  } else {
-    printf("Somthing wrong :(\n");
-  }
-  string_free(str);
-  return EXIT_SUCCESS;
+    err_t err = 0;
+    CLIOptions options;
+
+    err = parse_cli_arguments(argc, argv, &options);
+    if (err == UNKNOWN_CLI_ARGUMENT) {
+        print_help();
+    }
+
+    if (options.show_help) {
+        print_help();
+        string_free(options.input_file);
+        string_free(options.config_file);
+        return EXIT_SUCCESS;
+    }
+
+    if (options.show_info) {
+        print_info();
+        string_free(options.input_file);
+        string_free(options.config_file);
+        return EXIT_SUCCESS;
+    }
+
+    if (options.interactive_menu) {
+        err = start_interactive_menu(&options);
+        if (err) {
+            // TODO
+        }
+    }
+
+    if (argc == 1) {  // user didn't specify any args, starting interactive menu
+        err = start_interactive_menu(&options);
+        if (err) {
+            // TODO
+        }
+    }
+
+    string_free(options.input_file);
+    string_free(options.config_file);
+    return EXIT_SUCCESS;
 }
