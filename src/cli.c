@@ -85,6 +85,6 @@ void print_version() {
            "Fuse - " COLOR_RESET
            "interpreter with customizeable syntax\n" COLOR_YELLOW
            "v%s "
-           "[git]\nhttps://github.com/koftamainee/fuse.git\n" COLOR_RESET,
+           "[+git]\nhttps://github.com/koftamainee/fuse.git\n" COLOR_RESET,
            PROJECT_VERSION);
 }
