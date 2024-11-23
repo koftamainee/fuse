@@ -18,13 +18,15 @@ typedef struct {
     bool quiet_mode;            // -s
     bool preserve_temp_files;   // -t
     bool interactive_menu;      // -m
-    bool show_help;             // -h
-    bool show_info;             // -i
+    bool show_help;             // -h, --help
+    bool show_info;             // -i, --info
+    bool show_version;          // -v, --version
 } CLIOptions;
 
 err_t parse_cli_arguments(int argc, char *argv[], CLIOptions *options);
 
 void print_help();
 void print_info();
+void print_version();
 
 #endif

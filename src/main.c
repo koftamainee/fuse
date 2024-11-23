@@ -20,6 +20,13 @@ int main(int argc, char* argv[]) {
         return EXIT_SUCCESS;
     }
 
+    if (options.show_version) {
+        print_version();
+        string_free(options.input_file);
+        string_free(options.config_file);
+        return EXIT_SUCCESS;
+    }
+
     if (options.show_info) {
         print_info();
         string_free(options.input_file);

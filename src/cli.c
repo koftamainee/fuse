@@ -5,6 +5,7 @@
 #include <string.h>
 
 #include "../include/colors.h"
+#include "../include/project_version.h"
 
 err_t parse_cli_arguments(int argc, char *argv[], CLIOptions *options) {
     int i;
@@ -23,6 +24,9 @@ err_t parse_cli_arguments(int argc, char *argv[], CLIOptions *options) {
         } else if ((strcmp(argv[i], "-i") == 0) ||
                    (strcmp(argv[i], "--info") == 0)) {
             options->show_info = true;
+        } else if ((strcmp(argv[i], "-v") == 0) ||
+                   (strcmp(argv[i], "--version") == 0)) {
+            options->show_version = true;
         } else if (strcmp(argv[i], "-m") == 0) {
             options->interactive_menu = true;
         } else if (strcmp(argv[i], "-s") == 0) {
@@ -74,4 +78,13 @@ void print_info() {
         "Professors: " COLOR_GREEN
         "A. Mokryakov\n            A. Romanenkov\n            I. Irbitsky\n");
     printf(COLOR_YELLOW "Department:" COLOR_GREEN " Computer Science\n");
+}
+
+void print_version() {
+    printf(COLOR_GREEN
+           "Fuse - " COLOR_RESET
+           "interpreter with customizeable syntax\n" COLOR_YELLOW
+           "v%s "
+           "[git]\nhttps://github.com/koftamainee/fuse.git\n" COLOR_RESET,
+           PROJECT_VERSION);
 }
