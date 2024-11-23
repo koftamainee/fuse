@@ -1,5 +1,6 @@
 SRC_DIR = src
 BUILD_DIR = build
+INCLUDE_DIR = include
 OBJ_DIR = $(BUILD_DIR)/obj
 CONFIG_FILE = install_config.ini
 SERTIFICATE_FILE = certificate.txt
@@ -8,8 +9,10 @@ CC = cc
 
 CFLAGS = -Wall -Wextra -O2 -std=c99
 
-SRCS = $(wildcard $(SRC_DIR)/*.c)
-OBJS = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SRCS))
+SRCS += $(wildcard $(SRC_DIR)/*.c)
+SRCS += $(wildcard $(INCLUDE_DIR)/src/*.c)
+OBJS := $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(filter $(SRC_DIR)/%,$(SRCS))) \
+        $(patsubst $(INCLUDE_DIR)/src/%,$(OBJ_DIR)/%.o,$(filter $(INCLUDE_DIR)/src/%,$(SRCS)))
 
 TOTAL := $(shell echo $(SRCS) | wc -w)
 
@@ -25,8 +28,15 @@ COLOR_YELLOW=\033[33m
 compile: message check_cc $(TARGET)
 
 message:
-	@echo "😄  Hello, $(USER). Welcome to $(TARGET_NAME) build system."
+	@echo "👋  Hello, $(USER). Welcome to $(TARGET_NAME) build system."
+	@if [ ! -f install_config.ini ] || [ ! -f certificate.txt ]; then \
+		echo -e "\n$(COLOR_YELLOW)😅  Seems like you haven't configure project yet.$(COLOR_RESET)"; \
+		echo -e "✨  Starting \"x.sh\" script"; \
+		echo -e ""; \
+		./x.sh; \
+	fi
 	@echo "🚀  Compilation Started..."
+
 
 $(TARGET): $(OBJS)
 	@mkdir -p $(BUILD_DIR)
@@ -40,20 +50,26 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	echo -e "[$$CURRENT/$(TOTAL)] $(COLOR_GREEN)Building C object $@$(COLOR_RESET)"; \
 	$(CC) $(CFLAGS) -c $< -o $@
 
+$(OBJ_DIR)/%.o: $(INCLUDE_DIR)/src/%
+	@mkdir -p $(OBJ_DIR)
+	@CURRENT=$$(expr $(shell echo $(OBJS) | tr ' ' '\n' | grep -n "$@" | cut -d: -f1) + 0); \
+	echo -e "[$$CURRENT/$(TOTAL)] $(COLOR_GREEN)Building C object $@$(COLOR_RESET)"; \
+	$(CC) $(CFLAGS) -I$(INCLUDE_DIR) -c $< -o $@
+
 # Docs and License
-user_man:
+user_man: check_pdflatex
 # TODO
 
-in_instruct:
+in_instruct: check_pdflatex
 # TODO
 
-an_instruct:
+an_instruct: check_pdflatex
 # TODO
 
 license:
 # TODO
 
-docs: user_man in_instrucy an_instruct
+docs: user_man in_instruct an_instruct
 
 # Configuration and checkings
 configure:
@@ -65,6 +81,15 @@ check_cc:
 		echo -e "$(COLOR_GREEN)✅  C compiler found: $$COMPILER$(COLOR_RESET)"; \
 	else \
 		echo -e "$(COLOR_RED)❌  C compiler not found. Please install it.$(COLOR_RESET)"; \
+		exit 1; \
+	fi
+
+check_pdflatex:
+	@if command -v pdflatex >/dev/null 2>&1; then \
+		COMPILER=$$(pdflatex --version | head -n 1); \
+		echo -e "$(COLOR_GREEN)✅  pdfLaTeX compiler found: $$COMPILER$(COLOR_RESET)"; \
+	else \
+		echo -e "$(COLOR_RED)❌  pdfLaTeX compiler not found. Please install it.$(COLOR_RESET)"; \
 		exit 1; \
 	fi
 
