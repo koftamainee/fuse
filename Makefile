@@ -29,7 +29,10 @@ COLOR_YELLOW=\033[33m
 compile: message_hello check_config init_config_vars message_start_compilation check_cc $(TARGET_PATH)
 
 message_hello:
-	@echo "👋  Hello, $(USER). Welcome to $(TARGET_NAME) build system."
+ifeq ($(shell id -u),0)
+	@echo -e "⚠️  $(COLOR_YELLOW)Running as root. Potentially unsafe.$(COLOR_RESET)"
+endif
+	@echo "👋  Hello, $(shell whoami). Welcome to $(TARGET_NAME) build system."
 
 message_start_compilation:
 	@echo "🚀  Compilation Started..."
@@ -54,7 +57,7 @@ $(OBJ_DIR)/%.o: $(INCLUDE_DIR)/src/%
 	$(CC) $(CFLAGS) -I$(INCLUDE_DIR) -c $< -o $@
 
 # Docs and License
-user_man: check_pdflatex
+shell whoami_man: check_pdflatex
 # TODO
 
 in_instruct: check_pdflatex
@@ -66,7 +69,7 @@ an_instruct: check_pdflatex
 license:
 # TODO
 
-docs: user_man in_instruct an_instruct
+docs: shell whoami_man in_instruct an_instruct
 
 # Configuration and checkings
 configure:
@@ -111,10 +114,10 @@ endif
 	@sudo mkdir -p /var/log/$(TARGET)
 
 	@sudo mkdir -p $(BIN_PATH)
-	@sudo mkdir -p $(CERT_PATH) && sudo chown $(USER) $(CERT_PATH)
-	@sudo mkdir -p $(TEMP_PATH) && sudo chown $(USER) $(TEMP_PATH)
-	@sudo mkdir -p $(SAVE_PATH) && sudo chown $(USER) $(SAVE_PATH)
-	@sudo mkdir -p $(DOCS_PATH) && sudo chown $(USER) $(DOCS_PATH)
+	@sudo mkdir -p $(CERT_PATH) && sudo chown $(shell whoami) $(CERT_PATH)
+	@sudo mkdir -p $(TEMP_PATH) && sudo chown $(shell whoami) $(TEMP_PATH)
+	@sudo mkdir -p $(SAVE_PATH) && sudo chown $(shell whoami) $(SAVE_PATH)
+	@sudo mkdir -p $(DOCS_PATH) && sudo chown $(shell whoami) $(DOCS_PATH)
 
 	@echo -e "📝  Checking the certificate for correctness"
 # TODO: certificate checking (1 and 2 points)
