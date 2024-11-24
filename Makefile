@@ -144,7 +144,7 @@ endif
 	@sudo touch /etc/$(TARGET)/remove_all.sh
 	@sudo chmod +x /etc/$(TARGET)/remove_all.sh
 
-	@echo -e "\n$(COLOR_GREEN)✨  Installation done! Have a good day  ✨"
+	@echo -e "\n$(COLOR_GREEN)✨  Installation done! Have a good day  ✨$(COLOR_RESET)"
 
 # Cleaning
 clean_tmp:
