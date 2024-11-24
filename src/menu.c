@@ -1,7 +1,9 @@
 #include "menu.h"
 
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/types.h>
 
 #include "../include/colors.h"
 #include "cli.h"
@@ -25,11 +27,15 @@ void show_menu() {
 }
 
 err_t start_interactive_menu(CLIOptions* options) {
-    char c = 52;
-    while (c != EOF) {
+    char c = 0;
+    while (1) {
         show_menu();
-        c = getchar();
+        read_uint8_t_from_user((uint8_t*)&c);
+        if (c == 0) {
+            break;
+        }
         printf("\n");
     }
+    printf("Exiting gracefully.\n");
     return EXIT_SUCCESS;
 }
