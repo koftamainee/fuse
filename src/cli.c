@@ -1,13 +1,13 @@
 #include "cli.h"
 
 #include <limits.h>
+#include <stdarg.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
 
-#include "../include/colors.h"
 #include "../include/project_version.h"
 #include "logger.h"
 
@@ -73,43 +73,41 @@ err_t parse_cli_arguments(int argc, char *argv[], CLIOptions *options) {
 }
 
 void print_help() {
-    printf(COLOR_GREEN "Usage: fuse [options]\n" COLOR_RESET);
-    printf(COLOR_YELLOW "Options:\n");
-    printf("  -f <input_file>          Input file to process\n");
-    printf("  -c <config_file>         Configuration file\n");
-    printf("  -o <output_file>         Output file name\n");
-    printf("  -d                       Log user interaction to .log file\n");
-    printf("  -h                       Show help information\n");
-    printf(
-        "  -i                       Show author and university information\n");
-    printf("  -m                       Start in interactive menu mode\n");
-    printf("  -s                       Quiet mode (no .log file created)\n");
-    printf("  -t                       Preserve temporary files\n");
-    printf("  --debug                  Enable debug mode\n");
-    printf("  --base_input <uint_num>  Base for input numbers\n");
-    printf("  --base_output <uint_num> Base for output numbers\n");
-    printf("  --base_assign <uint_num> Base for assignments\n" COLOR_RESET);
+    logprintf(
+        "Usage: fuse [options]\n"
+        "Options:\n"
+        "  -f <input_file>          Input file to process\n"
+        "  -c <config_file>         Configuration file\n"
+        "  -o <output_file>         Output file name\n"
+        "  -d                       Log user interaction to .log file\n"
+        "  -h                       Show help information\n"
+        "  -i                       Show author and university information\n"
+        "  -m                       Start in interactive menu mode\n"
+        "  -s                       Quiet mode (no .log file created)\n"
+        "  -t                       Preserve temporary files\n"
+        "  --debug                  Enable debug mode\n"
+        "  --base_input <uint_num>  Base for input numbers\n"
+        "  --base_output <uint_num> Base for output numbers\n"
+        "  --base_assign <uint_num> Base for assignments\n");
 }
 
 void print_info() {
-    printf(COLOR_YELLOW "Author:" COLOR_GREEN "     Friev David\n");
-    printf(COLOR_YELLOW "University: " COLOR_GREEN "Kosygin University\n");
-    printf(COLOR_YELLOW "Group: " COLOR_GREEN "     ITPM-124\n");
-    printf(
-        COLOR_YELLOW
-        "Professors: " COLOR_GREEN
-        "A. Mokryakov\n            A. Romanenkov\n            I. Irbitsky\n");
-    printf(COLOR_YELLOW "Department:" COLOR_GREEN
-                        " Computer Science\n" COLOR_RESET);
+    logprintf(
+        "Author:     Friev David\n"
+        "University: Kosygin University\n"
+        "Group:      ITPM-124\n"
+        "Professors: A. Mokryakov\n"
+        "            A. Romanenkov\n"
+        "            I. Irbitsky\n"
+        "Department: Computer Science\n");
 }
 
 void print_version() {
-    printf(COLOR_GREEN
-           "Fuse - " COLOR_RESET
-           "interpreter with customizeable syntax\n" COLOR_YELLOW
-           "v%s "
-           "[+git]\nhttps://github.com/koftamainee/fuse.git\n" COLOR_RESET,
-           PROJECT_VERSION);
+    logprintf(
+        "Fuse - interpreter with customizeable syntax\n"
+        "v%s "
+        "[+git]\nhttps://github.com/koftamainee/fuse.git\n",
+        PROJECT_VERSION);
 }
 
 void clear_screen() { system("clear"); }
@@ -130,10 +128,11 @@ err_t read_int_from_user(int *num) {
     }
 
     value = strtol(buf, &endptr, 10);
+    log_io("Input: %ld", value);
 
     if (*endptr == '\0' || *endptr == '\n') {      // if read all data
         if (value > INT_MAX || value < INT_MIN) {  // and integer overflow
-            log_error("%s integer overflow", value);
+            log_error("%ld integer overflow", value);
             return INTEGER_OVERFLOW;
         }
     }
@@ -161,10 +160,11 @@ err_t read_uint8_t_from_user(uint8_t *num) {
     }
 
     value = strtol(buf, &endptr, 10);
+    log_io("Input: %ld", value);
 
     if (*endptr == '\0' || *endptr == '\n') {        // if read all data
         if (value > CHAR_MAX || value < CHAR_MIN) {  // and integer overflow
-            log_error("%s uint8_t overflow", value);
+            log_error("%ld uint8_t overflow", value);
             return UINT8_T_OVERFLOW;
         }
     }
@@ -198,10 +198,25 @@ err_t read_string_from_user(String *str) {
     if (len > 0 && buf[len - 1] == '\n') {
         buf[len = 1] = '\0';  // delete '\n' symbol
     }
+
+    log_io("Input: %s");
+
     *str = string_from(buf);  // allocating memory for string
     if (*str == NULL) {
         return MEMORY_ALLOCATION_ERROR;
     }
 
     return EXIT_SUCCESS;
+}
+
+void logprintf(const char *_format, ...) {
+    va_list ap, ap_cpy;
+    va_start(ap, _format);
+    va_copy(ap_cpy, ap);
+    vprintf(_format, ap_cpy);
+    va_end(ap_cpy);
+    va_copy(ap_cpy, ap);
+    vlog_log(LOG_IO, __FILE__, __LINE__, _format,
+             ap_cpy);  // using this instead of log_io() to pass va_list
+                       // pointer as argument
 }

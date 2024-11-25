@@ -1,30 +1,27 @@
 #include "menu.h"
 
 #include <stdint.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
 
-#include "../include/colors.h"
 #include "cli.h"
 #include "logger.h"
 
 void show_menu() {
     clear_screen();
-    printf(COLOR_BRIGHT_BLUE "==============================\n" COLOR_RESET);
-    printf(COLOR_BOLD_YELLOW "      Interactive Menu\n" COLOR_RESET);
-    printf(COLOR_BRIGHT_BLUE "==============================\n" COLOR_RESET);
-
-    printf(COLOR_GREEN "1. " COLOR_RESET "Load configuration\n");
-    printf(COLOR_GREEN "2. " COLOR_RESET "Process input file\n");
-    printf(COLOR_GREEN "3. " COLOR_RESET "Set output file\n");
-    printf(COLOR_GREEN "4. " COLOR_RESET "Enable debug mode\n");
-    printf(COLOR_GREEN "5. " COLOR_RESET "Show application info\n");
-    printf(COLOR_GREEN "6. " COLOR_RESET "Help\n");
-    printf(COLOR_RED "0. " COLOR_RESET "Exit\n");
-
-    printf(COLOR_BRIGHT_BLUE "==============================\n" COLOR_RESET);
-    printf(COLOR_CYAN "==> " COLOR_RESET);
+    logprintf(
+        "==============================\n"
+        "      Interactive Menu\n"
+        "==============================\n"
+        "1. Load configuration\n"
+        "2. Process input file\n"
+        "3. Set output file\n"
+        "4. Enable debug mode\n"
+        "5. Show application info\n"
+        "6. Help\n"
+        "0. Exit\n"
+        "==============================\n"
+        "==> ");
 }
 
 err_t start_interactive_menu(CLIOptions* options) {
@@ -38,6 +35,6 @@ err_t start_interactive_menu(CLIOptions* options) {
         }
         printf("\n");
     }
-    printf("Exiting gracefully.\n");
+    logprintf("Exiting gracefully.\n");
     return EXIT_SUCCESS;
 }
