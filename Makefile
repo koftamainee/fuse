@@ -7,7 +7,7 @@ SERTIFICATE_FILE = certificate.txt
 
 CC = cc
 
-CFLAGS = -Wall -Wextra -O2 -std=c99 -g -lrt
+CFLAGS = -Wall -Wextra -O2 -std=c99 -g
 
 SRCS += $(wildcard $(SRC_DIR)/*.c)
 SRCS += $(wildcard $(INCLUDE_DIR)/src/*.c)
