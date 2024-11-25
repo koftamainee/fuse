@@ -1,3 +1,6 @@
+#define _POSIX_C_SOURCE 199309L
+
+#include <bits/time.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -8,7 +11,11 @@
 
 int main(int argc, char* argv[]) {
     err_t err = 0;
+    struct timespec start, end;
+    double time_total;
     CLIOptions options;
+
+    clock_gettime(CLOCK_MONOTONIC, &start);
 
     /* TEMPORARY: creating logger instances */
     FILE* fptr = fopen("fuse.log", "w");
@@ -70,6 +77,10 @@ int main(int argc, char* argv[]) {
 
     string_free(options.input_file);
     string_free(options.config_file);
-    log_info("Program ended with code %d", EXIT_SUCCESS);
+    clock_gettime(CLOCK_MONOTONIC, &end);
+    time_total =
+        (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;
+    log_info("Program ended with code %d in %.5f seconds", EXIT_SUCCESS,
+             time_total);
     return EXIT_SUCCESS;
 }

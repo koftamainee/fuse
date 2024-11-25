@@ -198,6 +198,9 @@ err_t read_string_from_user(String *str) {
     if (len > 0 && buf[len - 1] == '\n') {
         buf[len = 1] = '\0';  // delete '\n' symbol
     }
+
+    log_io("Input: %s");
+
     *str = string_from(buf);  // allocating memory for string
     if (*str == NULL) {
         return MEMORY_ALLOCATION_ERROR;
