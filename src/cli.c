@@ -86,7 +86,8 @@ void print_info() {
         COLOR_YELLOW
         "Professors: " COLOR_GREEN
         "A. Mokryakov\n            A. Romanenkov\n            I. Irbitsky\n");
-    printf(COLOR_YELLOW "Department:" COLOR_GREEN " Computer Science\n");
+    printf(COLOR_YELLOW "Department:" COLOR_GREEN
+                        " Computer Science\n" COLOR_RESET);
 }
 
 void print_version() {
