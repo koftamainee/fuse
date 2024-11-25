@@ -26,6 +26,10 @@ int main(int argc, char* argv[]) {
         return err;
     }
 
+    if (options.log_user_interaction) {
+        log_set_user_interaction(1);
+    }
+
     if (options.show_help || err == UNKNOWN_CLI_ARGUMENT) {
         print_help();
         string_free(options.input_file);

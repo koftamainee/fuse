@@ -69,4 +69,9 @@ err_t read_uint8_t_from_user(uint8_t *num);
  */
 err_t read_string_from_user(String *str);
 
+/**
+ *  Custom printf wrap for logging and printing at the same time
+ */
+void logprintf(const char *_format, ...);
+
 #endif
