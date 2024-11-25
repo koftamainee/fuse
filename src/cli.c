@@ -21,29 +21,29 @@ err_t parse_cli_arguments(int argc, char *argv[], CLIOptions *options) {
 
     for (i = 1; i < argc; i++) {
         if (strcmp(argv[i], "-f") == 0 && i + 1 < argc) {
-            options->input_file = argv[++i];
+            options->input_file = string_from(argv[++i]);
         } else if (strcmp(argv[i], "-c") == 0 && i + 1 < argc) {
-            options->config_file = argv[++i];
+            options->config_file = string_from(argv[++i]);
         } else if (strcmp(argv[i], "-d") == 0) {
-            options->log_user_interaction = true;
+            options->log_user_interaction = 1;
         } else if ((strcmp(argv[i], "-h") == 0) ||
                    strcmp(argv[i], "--help") == 0) {
-            options->show_help = true;
+            options->show_help = 1;
         } else if ((strcmp(argv[i], "-i") == 0) ||
                    (strcmp(argv[i], "--info") == 0)) {
-            options->show_info = true;
+            options->show_info = 1;
         } else if ((strcmp(argv[i], "-v") == 0) ||
                    (strcmp(argv[i], "--version") == 0) ||
                    strcmp(argv[i], "--ver") == 0) {
-            options->show_version = true;
+            options->show_version = 1;
         } else if (strcmp(argv[i], "-m") == 0) {
-            options->interactive_menu = true;
+            options->interactive_menu = 1;
         } else if (strcmp(argv[i], "-s") == 0) {
-            options->quiet_mode = true;
+            options->quiet_mode = 1;
         } else if (strcmp(argv[i], "-t") == 0) {
-            options->preserve_temp_files = true;
+            options->preserve_temp_files = 1;
         } else if (strcmp(argv[i], "--debug") == 0) {
-            options->debug_mode = true;
+            options->debug_mode = 1;
         } else if (strcmp(argv[i], "--base_input") == 0 && i + 1 < argc) {
             options->base_input = (uint8_t)atoi(argv[++i]);
         } else if (strcmp(argv[i], "--base_output") == 0 && i + 1 < argc) {

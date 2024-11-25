@@ -111,9 +111,8 @@ endif
 	@sudo mkdir -p /etc/$(TARGET)
 	@sudo cp install_config.ini /etc/fuse/config.ini
 
-	@sudo mkdir -p /var/log/$(TARGET)
-
 	@sudo mkdir -p $(BIN_PATH)
+	@sudo mkdir -p /var/log/$(TARGET) && sudo chown $(shell whoami) /var/log/$(TARGET)
 	@sudo mkdir -p $(CERT_PATH) && sudo chown $(shell whoami) $(CERT_PATH)
 	@sudo mkdir -p $(TEMP_PATH) && sudo chown $(shell whoami) $(TEMP_PATH)
 	@sudo mkdir -p $(SAVE_PATH) && sudo chown $(shell whoami) $(SAVE_PATH)
@@ -182,7 +181,7 @@ remove_all:
 	@echo -e "🧹  $(COLOR_YELLOW)Uninstalling $(TARGET_NAME), deleting logs and saves$(COLOR_RESET)"
 	@sudo /etc/$(TARGET)/remove_all.sh
 
-.PHONY: all clean configure check_config init_config_vars install
+.PHONY: all clean configure check_config init_config_vars install message_hello message_start_compilation
 
 BIN_PATH  = $(shell awk -F '=' '/bin_path/{print $$2}' install_config.ini)
 CERT_PATH = $(shell awk -F '=' '/cert_path/{print $$2}' install_config.ini)

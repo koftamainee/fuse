@@ -1,7 +1,6 @@
 #ifndef CLI_H_
 #define CLI_H_
 
-#include <stdbool.h>
 #include <stdint.h>
 
 #include "../include/cstring.h"
@@ -9,19 +8,19 @@
 
 // Optinos fron user obtained by CLI arguments or through interattive menu
 typedef struct {
-    String input_file;          // -f
-    String config_file;         // -c
-    uint8_t base_input;         // --base_input
-    uint8_t base_output;        // --base_output
-    uint8_t base_assign;        // --base_assign
-    bool debug_mode;            // --debug
-    bool log_user_interaction;  // -d
-    bool quiet_mode;            // -s
-    bool preserve_temp_files;   // -t
-    bool interactive_menu;      // -m
-    bool show_help;             // -h, --help
-    bool show_info;             // -i, --info
-    bool show_version;          // -v, --version
+    String input_file;         // -f
+    String config_file;        // -c
+    uint8_t base_input;        // --base_input
+    uint8_t base_output;       // --base_output
+    uint8_t base_assign;       // --base_assign
+    int debug_mode;            // --debug
+    int log_user_interaction;  // -d
+    int quiet_mode;            // -s
+    int preserve_temp_files;   // -t
+    int interactive_menu;      // -m
+    int show_help;             // -h, --help
+    int show_info;             // -i, --info
+    int show_version;          // -v, --version
 } CLIOptions;
 
 void clear_screen();

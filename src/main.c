@@ -9,17 +9,14 @@ int main(int argc, char* argv[]) {
     CLIOptions options;
 
     err = parse_cli_arguments(argc, argv, &options);
-    if (err != 0 && err != UNKNOWN_CLI_ARGUMENT) {
+    if (err != 0 && err != UNKNOWN_CLI_ARGUMENT) {  // that is bad
         // TODO
         string_free(options.input_file);
         string_free(options.config_file);
         return err;
     }
-    if (err == UNKNOWN_CLI_ARGUMENT) {
-        print_help();
-    }
 
-    if (options.show_help) {
+    if (options.show_help || err == UNKNOWN_CLI_ARGUMENT) {
         print_help();
         string_free(options.input_file);
         string_free(options.config_file);
