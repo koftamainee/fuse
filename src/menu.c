@@ -7,6 +7,7 @@
 
 #include "../include/colors.h"
 #include "cli.h"
+#include "logger.h"
 
 void show_menu() {
     clear_screen();
@@ -28,6 +29,7 @@ void show_menu() {
 
 err_t start_interactive_menu(CLIOptions* options) {
     char c = 0;
+    log_info("Interactive menu started");
     while (1) {
         show_menu();
         read_uint8_t_from_user((uint8_t*)&c);

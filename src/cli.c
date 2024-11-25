@@ -9,6 +9,7 @@
 
 #include "../include/colors.h"
 #include "../include/project_version.h"
+#include "logger.h"
 
 err_t parse_cli_arguments(int argc, char *argv[], CLIOptions *options) {
     int i;
@@ -22,37 +23,49 @@ err_t parse_cli_arguments(int argc, char *argv[], CLIOptions *options) {
     for (i = 1; i < argc; i++) {
         if (strcmp(argv[i], "-f") == 0 && i + 1 < argc) {
             options->input_file = string_from(argv[++i]);
+            log_trace("find --file flag: %s", argv[i]);
         } else if (strcmp(argv[i], "-c") == 0 && i + 1 < argc) {
             options->config_file = string_from(argv[++i]);
+            log_trace("find --config flag: %s", argv[i]);
         } else if (strcmp(argv[i], "-d") == 0) {
+            log_trace("find -d flag");
             options->log_user_interaction = 1;
         } else if ((strcmp(argv[i], "-h") == 0) ||
                    strcmp(argv[i], "--help") == 0) {
+            log_trace("find -h flag");
             options->show_help = 1;
         } else if ((strcmp(argv[i], "-i") == 0) ||
                    (strcmp(argv[i], "--info") == 0)) {
+            log_trace("find -i flag");
             options->show_info = 1;
         } else if ((strcmp(argv[i], "-v") == 0) ||
                    (strcmp(argv[i], "--version") == 0) ||
                    strcmp(argv[i], "--ver") == 0) {
+            log_trace("find --version flag");
             options->show_version = 1;
         } else if (strcmp(argv[i], "-m") == 0) {
+            log_trace("find -m flag");
             options->interactive_menu = 1;
         } else if (strcmp(argv[i], "-s") == 0) {
+            log_trace("find -s flag");
             options->quiet_mode = 1;
         } else if (strcmp(argv[i], "-t") == 0) {
+            log_trace("find -t flag");
             options->preserve_temp_files = 1;
         } else if (strcmp(argv[i], "--debug") == 0) {
+            log_trace("find --debug flag");
             options->debug_mode = 1;
         } else if (strcmp(argv[i], "--base_input") == 0 && i + 1 < argc) {
             options->base_input = (uint8_t)atoi(argv[++i]);
+            log_trace("find --base_input flag: %d", options->base_input);
         } else if (strcmp(argv[i], "--base_output") == 0 && i + 1 < argc) {
             options->base_output = (uint8_t)atoi(argv[++i]);
+            log_trace("find --base_output flag: %d", options->base_output);
         } else if (strcmp(argv[i], "--base_assign") == 0 && i + 1 < argc) {
             options->base_assign = (uint8_t)atoi(argv[++i]);
+            log_trace("find --base_assign flag: %d", options->base_assign);
         } else {
-            fprintf(stderr, COLOR_RED "%s: Unknown CLI argument.\n" COLOR_RESET,
-                    argv[i]);
+            log_fatal("%s: Unknown CLI argument.", argv[i]);
             return UNKNOWN_CLI_ARGUMENT;
         }
     }
@@ -107,10 +120,12 @@ err_t read_int_from_user(int *num) {
     long value = 0;  // at least 32+ bytes for handling integer overflow
 
     if (num == NULL) {
+        log_error("Passed pointer to read_int function is NULL");
         return DEREFERENCING_NULL_PTR;
     }
 
     if (!fgets(buf, sizeof(buf), stdin)) {
+        log_error("error while reading udata from stdin");
         return ERROR_READING_FROM_STDIN;
     }
 
@@ -118,6 +133,7 @@ err_t read_int_from_user(int *num) {
 
     if (*endptr == '\0' || *endptr == '\n') {      // if read all data
         if (value > INT_MAX || value < INT_MIN) {  // and integer overflow
+            log_error("%s integer overflow", value);
             return INTEGER_OVERFLOW;
         }
     }
@@ -135,10 +151,12 @@ err_t read_uint8_t_from_user(uint8_t *num) {
     long value = 0;  // at least 32+ bytes for handling integer overflow
 
     if (num == NULL) {
+        log_error("Passed pointer to read_uint8_t function is NULL");
         return DEREFERENCING_NULL_PTR;
     }
 
     if (!fgets(buf, sizeof(buf), stdin)) {
+        log_error("error while reading udata from stdin");
         return ERROR_READING_FROM_STDIN;
     }
 
@@ -146,6 +164,7 @@ err_t read_uint8_t_from_user(uint8_t *num) {
 
     if (*endptr == '\0' || *endptr == '\n') {        // if read all data
         if (value > CHAR_MAX || value < CHAR_MIN) {  // and integer overflow
+            log_error("%s uint8_t overflow", value);
             return UINT8_T_OVERFLOW;
         }
     }
@@ -161,14 +180,18 @@ err_t read_string_from_user(String *str) {
     char buf[BUFSIZ];
 
     if (str == NULL) {
+        log_error("Passed pointer to read_string function is NULL");
         return DEREFERENCING_NULL_PTR;
     }
 
     if (*str != NULL) {  // potentioal memory leak
-        return WARNING_PASSED_STRING_TO_INIT_IS_NOT_NULL;
+        log_warn(
+            "Passed string to read_string function is not NULL. Potencial "
+            "memory leak");
     }
 
     if (!fgets(buf, BUFSIZ, stdin)) {
+        log_error("error while reading udata from stdin");
         return ERROR_READING_FROM_STDIN;
     }
     len = strlen(buf);
