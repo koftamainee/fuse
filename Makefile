@@ -57,19 +57,35 @@ $(OBJ_DIR)/%.o: $(INCLUDE_DIR)/src/%
 	$(CC) $(CFLAGS) -I$(INCLUDE_DIR) -c $< -o $@
 
 # Docs and License
-shell whoami_man: check_pdflatex
-# TODO
+user_man: check_pdflatex
+	@mkdir -p $(BUILD_DIR)/docs
+	@echo -e "[1/4]$(COLOR_GREEN) Compiling user_man.tex$(COLOR_RESET)"
+	@pdflatex docs/user_man.tex >> /dev/null
+	@rm -rf user_man.aux user_man.log
+	@mv user_man.pdf build/docs/user_man.pdf
 
 in_instruct: check_pdflatex
-# TODO
+	@mkdir -p $(BUILD_DIR)/docs
+	@echo -e "[2/4]$(COLOR_GREEN) Compiling in_instruct.tex$(COLOR_RESET)"
+	@pdflatex docs/in_instruct.tex >> /dev/null
+	@rm -rf in_instruct.aux in_instruct.log
+	@mv in_instruct.pdf build/docs/in_instruct.pdf
 
 an_instruct: check_pdflatex
-# TODO
+	@mkdir -p $(BUILD_DIR)/docs
+	@echo -e "[3/4]$(COLOR_GREEN) Compiling an_instruct.tex$(COLOR_RESET)"
+	@pdflatex docs/an_instruct.tex >> /dev/null
+	@rm -rf an_instruct.aux an_instruct.log
+	@mv an_instruct.pdf build/docs/an_instruct.pdf
 
-license:
-# TODO
+license: check_pdflatex
+	@mkdir -p $(BUILD_DIR)/docs
+	@echo -e "[4/4]$(COLOR_GREEN) Compiling LICENSE.tex$(COLOR_RESET)"
+	@pdflatex docs/LICENSE.tex >> /dev/null
+	@rm -rf LICENSE.aux LICENSE.log
+	@mv LICENSE.pdf build/docs/LICENSE.pdf
 
-docs: shell whoami_man in_instruct an_instruct
+docs: user_man in_instruct an_instruct license
 
 # Configuration and checkings
 configure:
@@ -118,9 +134,6 @@ endif
 	@sudo mkdir -p $(SAVE_PATH) && sudo chown $(shell whoami) $(SAVE_PATH)
 	@sudo mkdir -p $(DOCS_PATH) && sudo chown $(shell whoami) $(DOCS_PATH)
 
-#if standart path
-	@sudo chown $(shell whoami) ~/$(TARGET)
-
 	@echo -e "📝  Checking the certificate for correctness"
 # TODO: certificate checking (1 and 2 points)
 
@@ -128,7 +141,7 @@ endif
 # TODO
 	@sudo rm -rf /usr/bin/$(TARGET)
 	@echo -e "🏄  Installing $(TARGET_NAME) binary"
-	sudo cp $(BUILD_DIR)/$(TARGET) $(BIN_PATH)
+	@sudo cp $(BUILD_DIR)/$(TARGET) $(BIN_PATH)
 
 	@echo -e "🔗  Creating symlinks"
 ifneq ($(BIN_PATH),/usr/bin)
@@ -161,11 +174,15 @@ clean_certificate:
 	@echo -e "🧹  $(COLOR_YELLOW)Cleaning temporary certificate file$(COLOR_RESET)"
 	@rm -rf $(SERTIFICATE_FILE)
 
-clean_compile: clean_tmp
+clean_compile: clean_tmp clean_docs
 	@echo -e "🧹  $(COLOR_YELLOW)Cleaning fuse binary$(COLOR_RESET)"
-	@rm -rf $(TARGET)
+	@rm -rf $(BUILD_DIR)/$(TARGET)
 
-clean: clean_tmp clean_certificate clean_config
+clean_docs:
+	@echo -e "🧹  $(COLOR_YELLOW)Cleaning compiled docs$(COLOR_RESET)"
+	@rm -rf $(BUILD_DIR)/docs
+
+clean: clean_tmp clean_certificate clean_config clean_docs
 
 clean_all: clean clean_compile
 
