@@ -8,7 +8,7 @@
 #define MAX_LOGGERS 16
 
 typedef struct {
-    FILE *fp;
+    FILE* fp;
     log_level level;
 } Logger;  // loggers instance
 
@@ -19,11 +19,11 @@ static struct {
     int log_IO_interaction;
 } L = {LOG_INFO, {{NULL, LOG_INFO}}, 0, 0};
 
-static const char *level_string[] = {"IO",   "TRACE", "DEBUG", "INFO",
+static const char* level_string[] = {"IO",   "TRACE", "DEBUG", "INFO",
                                      "WARN", "ERROR", "FATAL"};
 
-static void log_to_stream(FILE *stream, log_level level, const char *file,
-                          int line, const char *fmt, va_list ap) {
+static void log_to_stream(FILE* stream, log_level level, const char* file,
+                          int line, const char* fmt, va_list ap) {
     char time_buf[16];
     time_t t = time(NULL);
     strftime(time_buf, sizeof(time_buf), "%H:%M:%S",
@@ -42,18 +42,19 @@ void log_set_level(log_level level) { L.level = level; }
 
 void log_set_user_interaction(int enable) { L.log_IO_interaction = enable; }
 
-err_t log_add_fp(FILE *fp, log_level level) {
+err_t log_add_fp(FILE* fp, log_level level) {
     if (fp == NULL) {
         fprintf(stderr,
-                "Error: Passed file pointer is NULL. Aborting adding new "
+                "Error: Passed file pointer is NULL. "
+                "Aborting adding new "
                 "logger.\n");
         return DEREFERENCING_NULL_PTR;
     }
 
     if (L.loggers_count >= MAX_LOGGERS) {
-        fprintf(
-            stderr,
-            "Error: Reached max logger count. Aborting adding new logger.\n");
+        fprintf(stderr,
+                "Error: Reached max logger count. "
+                "Aborting adding new logger.\n");
         return ERROR_MAX_LOGGER_COUNT_REACHED;
     }
 
@@ -61,7 +62,7 @@ err_t log_add_fp(FILE *fp, log_level level) {
     return EXIT_SUCCESS;
 }
 
-void log_log(log_level level, const char *file, int line, const char *fmt,
+void log_log(log_level level, const char* file, int line, const char* fmt,
              ...) {
     if (fmt == NULL) {
         fprintf(stderr, "Warning: fmt passed to log is NULL.\n");
@@ -90,7 +91,7 @@ void log_log(log_level level, const char *file, int line, const char *fmt,
     va_end(ap);
 }
 
-void vlog_log(log_level level, const char *file, int line, const char *fmt,
+void vlog_log(log_level level, const char* file, int line, const char* fmt,
               va_list ap) {  // copy of prev. function but with va_list ap
                              // instead of "..." (for logprintf())
     if (fmt == NULL) {

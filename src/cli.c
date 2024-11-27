@@ -17,7 +17,6 @@ err_t parse_cli_arguments(int argc, char *argv[], CLIOptions *options) {
     if (options == NULL || argv == NULL) {
         return DEREFERENCING_NULL_PTR;
     }
-
     memset((void *)options, 0, sizeof(CLIOptions));
 
     for (i = 1; i < argc; i++) {
