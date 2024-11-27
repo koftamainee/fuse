@@ -118,7 +118,7 @@ endif
 	@sudo mkdir -p $(SAVE_PATH) && sudo chown $(shell whoami) $(SAVE_PATH)
 	@sudo mkdir -p $(DOCS_PATH) && sudo chown $(shell whoami) $(DOCS_PATH)
 
-	#if standart path
+#if standart path
 	@sudo chown $(shell whoami) ~/$(TARGET)
 
 	@echo -e "📝  Checking the certificate for correctness"
@@ -128,26 +128,23 @@ endif
 # TODO
 	@sudo rm -rf /usr/bin/$(TARGET)
 	@echo -e "🏄  Installing $(TARGET_NAME) binary"
-	@sudo cp $(BUILD_DIR)/$(TARGET) $(BIN_PATH)/$(TARGET)
+	sudo cp $(BUILD_DIR)/$(TARGET) $(BIN_PATH)
 
 	@echo -e "🔗  Creating symlinks"
 ifneq ($(BIN_PATH),/usr/bin)
 	@sudo ln -sf $(BIN_PATH)/$(TARGET) /usr/bin/$(TARGET)
 endif
-	@sudo ln -sf /etc/$(TARGET) $(BIN_PATH)/etc
-	@sudo ln -sf $(SAVE_PATH) $(BIN_PATH)/saves
-	@sudo ln -sf $(TEMP_PATH) $(BIN_PATH)/temp
-	@sudo ln -sf $(DOCS_PATH) $(BIN_PATH)/docs
+
+	@sudo ln -sfn /etc/$(TARGET) $(BIN_PATH)/etc
+	@sudo ln -sfn $(SAVE_PATH) $(BIN_PATH)/saves
+	@sudo ln -sfn $(TEMP_PATH) $(BIN_PATH)/tmp
+	@sudo ln -sfn $(DOCS_PATH) $(BIN_PATH)/docs
+
 
 	@echo -e "🤖  Creating uninstalling scripts"
-	@sudo touch /etc/$(TARGET)/uninstall.sh
-	@sudo chmod +x /etc/$(TARGET)/uninstall.sh
-
-	@sudo touch /etc/$(TARGET)/remove.sh
-	@sudo chmod +x /etc/$(TARGET)/remove.sh
-
-	@sudo touch /etc/$(TARGET)/remove_all.sh
-	@sudo chmod +x /etc/$(TARGET)/remove_all.sh
+	@sudo cp scripts/uninstall.sh /etc/$(TARGET)/uninstall.sh
+	@sudo cp scripts/remove.sh /etc/$(TARGET)/remove.sh
+	@sudo cp scripts/remove_all.sh /etc/$(TARGET)/remove_all.sh
 
 	@echo -e "\n$(COLOR_GREEN)✨  Installation done! Have a good day  ✨$(COLOR_RESET)"
 
@@ -173,16 +170,29 @@ clean: clean_tmp clean_certificate clean_config
 clean_all: clean clean_compile
 
 uninstall:
-	@echo -e "🧹  $(COLOR_YELLOW)Uninstalling $(TARGET_NAME)$(COLOR_RESET)"
-	@sudo /etc/$(TARGET)/uninstall.sh
+	@if [ ! -f "/etc/$(TARGET)/uninstall.sh" ]; then \
+	echo -e "🚫  $(COLOR_RED)$(TARGET_NAME) is not installed.$(COLOR_RESET)"; \
+	else \
+	echo -e "🧹  $(COLOR_YELLOW)Uninstalling $(TARGET_NAME)$(COLOR_RESET)"; \
+	sudo sh "/etc/$(TARGET)/uninstall.sh"; \
+	fi
 
 remove:
-	@echo -e "🧹  $(COLOR_YELLOW)Uninstalling $(TARGET_NAME) and deleting logs$(COLOR_RESET)"
-	@sudo /etc/$(TARGET)/remove.sh
+	@if [ ! -f "/etc/$(TARGET)/remove.sh" ]; then \
+    echo -e "🚫  $(COLOR_RED)$(TARGET_NAME) is not installed.$(COLOR_RESET)"; \
+    else \
+    echo -e "🧹  $(COLOR_YELLOW)Uninstalling $(TARGET_NAME) and deleting logs$(COLOR_RESET)"; \
+    sudo sh /etc/$(TARGET)/remove.sh; \
+    fi
 
 remove_all:
-	@echo -e "🧹  $(COLOR_YELLOW)Uninstalling $(TARGET_NAME), deleting logs and saves$(COLOR_RESET)"
-	@sudo /etc/$(TARGET)/remove_all.sh
+	@if [ ! -f "/etc/$(TARGET)/remove_all.sh" ]; then \
+    echo -e "🚫  $(COLOR_RED)$(TARGET_NAME) is not installed.$(COLOR_RESET)"; \
+    else \
+    echo -e "🧹  $(COLOR_YELLOW)Uninstalling $(TARGET_NAME), deleting logs and saves$(COLOR_RESET)"; \
+    sudo sh /etc/$(TARGET)/remove_all.sh; \
+    fi
+
 
 .PHONY: all clean configure check_config init_config_vars install message_hello message_start_compilation
 
