@@ -43,7 +43,7 @@ $(TARGET_PATH): $(OBJS)
 	@echo -e "[$(TOTAL)/$(TOTAL)] $(COLOR_GREEN)Linking C executable $(BUILD_DIR)/$(TARGET)$(COLOR_RESET)"
 	@$(CC) $(CFLAGS) -o $(BUILD_DIR)/$(TARGET) $(OBJS)
 	@echo -e "[$(TOTAL)/$(TOTAL)] Built target $(TARGET)"
-	
+
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	@mkdir -p $(OBJ_DIR)
 	@CURRENT=$$(expr $(shell echo $(OBJS) | tr ' ' '\n' | grep -n "$@" | cut -d: -f1) + 0); \
@@ -118,6 +118,9 @@ endif
 	@sudo mkdir -p $(SAVE_PATH) && sudo chown $(shell whoami) $(SAVE_PATH)
 	@sudo mkdir -p $(DOCS_PATH) && sudo chown $(shell whoami) $(DOCS_PATH)
 
+	#if standart path
+	@sudo chown $(shell whoami) ~/$(TARGET)
+
 	@echo -e "📝  Checking the certificate for correctness"
 # TODO: certificate checking (1 and 2 points)
 
@@ -165,14 +168,14 @@ clean_compile: clean_tmp
 	@echo -e "🧹  $(COLOR_YELLOW)Cleaning fuse binary$(COLOR_RESET)"
 	@rm -rf $(TARGET)
 
-clean: clean_tmp clean_certificate clean_config 
+clean: clean_tmp clean_certificate clean_config
 
 clean_all: clean clean_compile
 
 uninstall:
 	@echo -e "🧹  $(COLOR_YELLOW)Uninstalling $(TARGET_NAME)$(COLOR_RESET)"
 	@sudo /etc/$(TARGET)/uninstall.sh
-	
+
 remove:
 	@echo -e "🧹  $(COLOR_YELLOW)Uninstalling $(TARGET_NAME) and deleting logs$(COLOR_RESET)"
 	@sudo /etc/$(TARGET)/remove.sh

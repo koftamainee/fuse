@@ -65,7 +65,7 @@ write_config() {
     echo "full_name=$full_name" >> "$config_file"
     echo "email=$email" >> "$config_file"
     echo "phone=$phone" >> "$config_file"
-    
+
     echo >> "$config_file"
     echo "[paths]" >> "$config_file"
     echo "bin_path=$bin_path/fuse" >> "$config_file"
