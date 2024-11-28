@@ -3,11 +3,11 @@ BUILD_DIR = build
 INCLUDE_DIR = include
 OBJ_DIR = $(BUILD_DIR)/obj
 CONFIG_FILE = install_config.ini
-SERTIFICATE_FILE = certificate.txt
+CERT_FILE = certificate.txt
 
 CC = cc
 
-CFLAGS = -Wall -Wextra -O2 -std=c99
+CFLAGS = -Wall -Wextra -O2 -std=c99 -g
 
 SRCS += $(wildcard $(SRC_DIR)/*.c)
 SRCS += $(wildcard $(INCLUDE_DIR)/src/*.c)
@@ -18,6 +18,7 @@ TOTAL := $(shell echo $(SRCS) | wc -w)
 
 TARGET = fuse
 TARGET_NAME = Fuse
+TARGET_PATH = $(BUILD_DIR)/$(TARGET)
 
 COLOR_RESET=\033[0m
 COLOR_GREEN=\033[32m
@@ -25,25 +26,24 @@ COLOR_RED=\033[31m
 COLOR_YELLOW=\033[33m
 
 # Binary compilation
-compile: message check_cc $(TARGET)
+compile: message_hello check_config init_config_vars message_start_compilation check_cc $(TARGET_PATH)
 
-message:
-	@echo "👋  Hello, $(USER). Welcome to $(TARGET_NAME) build system."
-	@if [ ! -f install_config.ini ] || [ ! -f certificate.txt ]; then \
-		echo -e "\n$(COLOR_YELLOW)😅  Seems like you haven't configure project yet.$(COLOR_RESET)"; \
-		echo -e "✨  Starting \"x.sh\" script"; \
-		echo -e ""; \
-		./x.sh; \
-	fi
+message_hello:
+ifeq ($(shell id -u),0)
+	@echo -e "⚠️  $(COLOR_YELLOW)Running as root. Potentially unsafe.$(COLOR_RESET)"
+endif
+	@echo "👋  Hello, $(shell whoami). Welcome to $(TARGET_NAME) build system."
+
+message_start_compilation:
 	@echo "🚀  Compilation Started..."
 
 
-$(TARGET): $(OBJS)
+$(TARGET_PATH): $(OBJS)
 	@mkdir -p $(BUILD_DIR)
 	@echo -e "[$(TOTAL)/$(TOTAL)] $(COLOR_GREEN)Linking C executable $(BUILD_DIR)/$(TARGET)$(COLOR_RESET)"
 	@$(CC) $(CFLAGS) -o $(BUILD_DIR)/$(TARGET) $(OBJS)
 	@echo -e "[$(TOTAL)/$(TOTAL)] Built target $(TARGET)"
-	
+
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	@mkdir -p $(OBJ_DIR)
 	@CURRENT=$$(expr $(shell echo $(OBJS) | tr ' ' '\n' | grep -n "$@" | cut -d: -f1) + 0); \
@@ -57,19 +57,34 @@ $(OBJ_DIR)/%.o: $(INCLUDE_DIR)/src/%
 	$(CC) $(CFLAGS) -I$(INCLUDE_DIR) -c $< -o $@
 
 # Docs and License
-user_man: check_pdflatex
-# TODO
+user_man: $(BUILD_DIR)/docs/user_man.pdf
+in_instruct: $(BUILD_DIR)/docs/in_instruct.pdf
+an_instruct: $(BUILD_DIR)/docs/an_instruct.pdf
+license: $(BUILD_DIR)/docs/LICENSE.pdf
 
-in_instruct: check_pdflatex
-# TODO
+$(BUILD_DIR)/docs/user_man.pdf: docs/user_man.tex | $(BUILD_DIR)/docs check_pdflatex
+	@echo -e "[1/4]$(COLOR_GREEN) Compiling user_man.tex$(COLOR_RESET)"
+	@pdflatex -output-directory=$(BUILD_DIR)/docs docs/user_man.tex >> /dev/null
+	@rm -f $(BUILD_DIR)/docs/user_man.aux $(BUILD_DIR)/docs/user_man.log
 
-an_instruct: check_pdflatex
-# TODO
+$(BUILD_DIR)/docs/in_instruct.pdf: docs/in_instruct.tex | $(BUILD_DIR)/docs check_pdflatex
+	@echo -e "[2/4]$(COLOR_GREEN) Compiling in_instruct.tex$(COLOR_RESET)"
+	@pdflatex -output-directory=$(BUILD_DIR)/docs docs/in_instruct.tex >> /dev/null
+	@rm -f $(BUILD_DIR)/docs/in_instruct.aux $(BUILD_DIR)/docs/in_instruct.log
 
-license:
-# TODO
+$(BUILD_DIR)/docs/an_instruct.pdf: docs/an_instruct.tex | $(BUILD_DIR)/docs check_pdflatex
+	@echo -e "[3/4]$(COLOR_GREEN) Compiling an_instruct.tex$(COLOR_RESET)"
+	@pdflatex -output-directory=$(BUILD_DIR)/docs docs/an_instruct.tex >> /dev/null
+	@rm -f $(BUILD_DIR)/docs/an_instruct.aux $(BUILD_DIR)/docs/an_instruct.log
 
-docs: user_man in_instruct an_instruct
+$(BUILD_DIR)/docs/LICENSE.pdf: docs/LICENSE.tex | $(BUILD_DIR)/docs check_pdflatex
+	@echo -e "[4/4]$(COLOR_GREEN) Compiling LICENSE.tex$(COLOR_RESET)"
+	@pdflatex -output-directory=$(BUILD_DIR)/docs docs/LICENSE.tex >> /dev/null
+	@rm -f $(BUILD_DIR)/docs/LICENSE.aux $(BUILD_DIR)/docs/LICENSE.log
+
+$(BUILD_DIR)/docs:
+	@mkdir -p $(BUILD_DIR)/docs
+docs: user_man in_instruct an_instruct license
 
 # Configuration and checkings
 configure:
@@ -93,11 +108,79 @@ check_pdflatex:
 		exit 1; \
 	fi
 
-# Installation
-install: $(BUILD_DIR)/$(TARGET)
-	./build/fuse
+check_config:
+	@if [ ! -f install_config.ini ] || [ ! -f certificate.txt ]; then \
+		echo -e "\n$(COLOR_YELLOW)😅  Seems like you haven't configure project yet.$(COLOR_RESET)"; \
+		echo -e "✨  Starting \"x.sh\" script"; \
+		echo -e ""; \
+		./x.sh; \
+	fi
 
-all: compile docs
+# Installation
+install: check_config $(TARGET_PATH) docs
+ifneq ($(shell id -u),0)
+	@echo -e "✋  $(COLOR_RED)Running \"make install\" require root access$(COLOR_RESET)"
+	@echo -e "🔐  $(COLOR_YELLOW)Entering sudo-enabled environment...$(COLOR_RESET)"
+endif
+	@echo -e "📁  Creating directories"
+	@sudo mkdir -p /etc/$(TARGET)
+	@sudo cp install_config.ini /etc/fuse/config.ini
+
+	@sudo mkdir -p $(BIN_PATH)
+	@sudo mkdir -p /var/log/$(TARGET) && sudo chown $(shell whoami) /var/log/$(TARGET)
+	@sudo mkdir -p $(CERT_PATH) && sudo chown $(shell whoami) $(CERT_PATH)
+	@sudo mkdir -p $(TEMP_PATH) && sudo chown $(shell whoami) $(TEMP_PATH)
+	@sudo mkdir -p $(SAVE_PATH) && sudo chown $(shell whoami) $(SAVE_PATH)
+	@sudo mkdir -p $(DOCS_PATH) && sudo chown $(shell whoami) $(DOCS_PATH)
+
+	@echo -e "📝  Checking the certificate for correctness"
+	@awk '/^Certificate of Free Use$$/ {found[1]=1} \
+		      /^User: .+$$/ {found[2]=1} \
+		      /^E-mail: [a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$$/ {found[3]=1} \
+		      /^Phone: \+[0-9]{8,15}$$/ {found[4]=1} \
+		      /^License: MIT License$$/ {found[5]=1} \
+		      /^Install Date: [0-9]{4}-[0-9]{2}-[0-9]{2}$$/ {found[6]=1} \
+		      END { \
+		        if (length(found) == 6) { \
+		          print "✅  $(COLOR_GREEN)Certificate is valid.$(COLOR_RESET)"; \
+		        } else { \
+		          print "🔏  $(COLOR_RED)Certificate is invalid. Missing fields:$(COLOR_RESET)"; \
+		          if (!found[1]) print "- Certificate of Free Use"; \
+		          if (!found[2]) print "- User field"; \
+		          if (!found[3]) print "- Valid email"; \
+		          if (!found[4]) print "- Valid phone"; \
+		          if (!found[5]) print "- License"; \
+		          if (!found[6]) print "- Install Date"; \
+		          exit 1; \
+		        } \
+		      }' $(CERT_FILE)
+
+	@echo -e "🔑  Change certificate owner to root"
+	@sudo cp $(CERT_FILE) $(CERT_PATH)/$(CERT_FILE)
+	@sudo chown root $(CERT_PATH)/$(CERT_FILE)
+	@sudo chmod 0644 $(CERT_PATH)/$(CERT_FILE)
+
+	@sudo rm -rf /usr/bin/$(TARGET)
+	@echo -e "🏄  Installing $(TARGET_NAME) binary"
+	@sudo cp $(BUILD_DIR)/$(TARGET) $(BIN_PATH)
+
+	@echo -e "🔗  Creating symlinks"
+ifneq ($(BIN_PATH),/usr/bin)
+	@sudo ln -sf $(BIN_PATH)/$(TARGET) /usr/bin/$(TARGET)
+endif
+
+	@sudo ln -sf /etc/$(TARGET) $(BIN_PATH)/etc
+	@sudo ln -sf $(SAVE_PATH) $(BIN_PATH)/saves
+	@sudo ln -sf $(TEMP_PATH) $(BIN_PATH)/tmp
+	@sudo ln -sf $(DOCS_PATH) $(BIN_PATH)/docs
+
+
+	@echo -e "🤖  Creating uninstalling scripts"
+	@sudo cp scripts/uninstall.sh /etc/$(TARGET)/uninstall.sh
+	@sudo cp scripts/remove.sh /etc/$(TARGET)/remove.sh
+	@sudo cp scripts/remove_all.sh /etc/$(TARGET)/remove_all.sh
+
+	@echo -e "\n$(COLOR_GREEN)✨  Installation done! Have a good day  ✨$(COLOR_RESET)"
 
 # Cleaning
 clean_tmp:
@@ -110,23 +193,49 @@ clean_config:
 
 clean_certificate:
 	@echo -e "🧹  $(COLOR_YELLOW)Cleaning temporary certificate file$(COLOR_RESET)"
-	@rm -rf $(SERTIFICATE_FILE)
+	@rm -rf $(CERT_FILE)
 
-clean_compile: clean_tmp
+clean_compile: clean_tmp clean_docs
 	@echo -e "🧹  $(COLOR_YELLOW)Cleaning fuse binary$(COLOR_RESET)"
-	@rm -rf $(TARGET)
+	@rm -rf $(BUILD_DIR)/$(TARGET)
 
-clean: clean_tmp clean_certificate clean_config 
+clean_docs:
+	@echo -e "🧹  $(COLOR_YELLOW)Cleaning compiled docs$(COLOR_RESET)"
+	@rm -rf $(BUILD_DIR)/docs
+
+clean: clean_tmp clean_certificate clean_config clean_docs
 
 clean_all: clean clean_compile
 
 uninstall:
-# TODO
+	@if [ ! -f "/etc/$(TARGET)/uninstall.sh" ]; then \
+	echo -e "🚫  $(COLOR_RED)$(TARGET_NAME) is not installed.$(COLOR_RESET)"; \
+	else \
+	echo -e "🧹  $(COLOR_YELLOW)Uninstalling $(TARGET_NAME)$(COLOR_RESET)"; \
+	sudo sh "/etc/$(TARGET)/uninstall.sh"; \
+	fi
 
-remove: uninstall
-# TODO
+remove:
+	@if [ ! -f "/etc/$(TARGET)/remove.sh" ]; then \
+    echo -e "🚫  $(COLOR_RED)$(TARGET_NAME) is not installed.$(COLOR_RESET)"; \
+    else \
+    echo -e "🧹  $(COLOR_YELLOW)Uninstalling $(TARGET_NAME) and deleting logs$(COLOR_RESET)"; \
+    sudo sh /etc/$(TARGET)/remove.sh; \
+    fi
 
-remove_all: remove
-# TODO
+remove_all:
+	@if [ ! -f "/etc/$(TARGET)/remove_all.sh" ]; then \
+    echo -e "🚫  $(COLOR_RED)$(TARGET_NAME) is not installed.$(COLOR_RESET)"; \
+    else \
+    echo -e "🧹  $(COLOR_YELLOW)Uninstalling $(TARGET_NAME), deleting logs and saves$(COLOR_RESET)"; \
+    sudo sh /etc/$(TARGET)/remove_all.sh; \
+    fi
 
-.PHONY: all clean message configure
+
+.PHONY: all clean configure check_config init_config_vars install message_hello message_start_compilation
+
+BIN_PATH  = $(shell awk -F '=' '/bin_path/{print $$2}' install_config.ini)
+CERT_PATH = $(shell awk -F '=' '/cert_path/{print $$2}' install_config.ini)
+TEMP_PATH = $(shell awk -F '=' '/temp_path/{print $$2}' install_config.ini)
+SAVE_PATH = $(shell awk -F '=' '/save_path/{print $$2}' install_config.ini)
+DOCS_PATH = $(shell awk -F '=' '/docs_path/{print $$2}' install_config.ini)
