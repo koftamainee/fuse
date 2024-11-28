@@ -118,3 +118,27 @@ void vlog_log(log_level level, const char* file, int line, const char* fmt,
 
     va_end(ap);
 }
+
+err_t logger_start() {
+    err_t err = 0;
+    FILE* logs_file = NULL;
+    time_t t = time(NULL);
+    struct tm* current_time = localtime(&t);
+    char filename_buffer[64];
+    strftime(filename_buffer, sizeof(filename_buffer),
+             "/var/log/fuse/%Y-%m-%d_%H-%m-%s.log", current_time);
+    logs_file = fopen(filename_buffer, "w");
+    if (logs_file == NULL) {
+        fprintf(stderr, "Error oppening a file for logging\n");
+        return ERROR_OPPENING_THE_FILE;
+    }
+    err = log_add_fp(logs_file, LOG_TRACE);
+    if (err) {
+        return err;
+    }
+    err = log_add_fp(stderr, LOG_ERROR);
+    if (err) {
+        return err;
+    }
+    return EXIT_SUCCESS;
+}

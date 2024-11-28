@@ -20,51 +20,42 @@ err_t parse_cli_arguments(int argc, char *argv[], CLIOptions *options) {
     memset((void *)options, 0, sizeof(CLIOptions));
 
     for (i = 1; i < argc; i++) {
-        if (strcmp(argv[i], "-f") == 0 && i + 1 < argc) {
+        if (strcmp(argv[i], "-s") == 0) {
+            options->quiet_mode = 1;
+        } else if (strcmp(argv[i], "-t") == 0) {
+            options->preserve_temp_files = 1;
+        } else if (strcmp(argv[i], "-f") == 0 && i + 1 < argc) {
             options->input_file = string_from(argv[++i]);
-            log_trace("find --file flag: %s", argv[i]);
         } else if (strcmp(argv[i], "-c") == 0 && i + 1 < argc) {
             options->config_file = string_from(argv[++i]);
-            log_trace("find --config flag: %s", argv[i]);
         } else if (strcmp(argv[i], "-d") == 0) {
-            log_trace("find -d flag");
             options->log_user_interaction = 1;
         } else if ((strcmp(argv[i], "-h") == 0) ||
                    strcmp(argv[i], "--help") == 0) {
-            log_trace("find -h flag");
             options->show_help = 1;
         } else if ((strcmp(argv[i], "-i") == 0) ||
                    (strcmp(argv[i], "--info") == 0)) {
-            log_trace("find -i flag");
             options->show_info = 1;
         } else if ((strcmp(argv[i], "-v") == 0) ||
                    (strcmp(argv[i], "--version") == 0) ||
                    strcmp(argv[i], "--ver") == 0) {
-            log_trace("find --version flag");
             options->show_version = 1;
         } else if (strcmp(argv[i], "-m") == 0) {
-            log_trace("find -m flag");
             options->interactive_menu = 1;
         } else if (strcmp(argv[i], "-s") == 0) {
-            log_trace("find -s flag");
             options->quiet_mode = 1;
         } else if (strcmp(argv[i], "-t") == 0) {
-            log_trace("find -t flag");
             options->preserve_temp_files = 1;
         } else if (strcmp(argv[i], "--debug") == 0) {
-            log_trace("find --debug flag");
             options->debug_mode = 1;
         } else if (strcmp(argv[i], "--base_input") == 0 && i + 1 < argc) {
             options->base_input = (uint8_t)atoi(argv[++i]);
-            log_trace("find --base_input flag: %d", options->base_input);
         } else if (strcmp(argv[i], "--base_output") == 0 && i + 1 < argc) {
             options->base_output = (uint8_t)atoi(argv[++i]);
-            log_trace("find --base_output flag: %d", options->base_output);
         } else if (strcmp(argv[i], "--base_assign") == 0 && i + 1 < argc) {
             options->base_assign = (uint8_t)atoi(argv[++i]);
-            log_trace("find --base_assign flag: %d", options->base_assign);
         } else {
-            log_fatal("%s: Unknown CLI argument.", argv[i]);
+            fprintf(stderr, "%s: Unknown CLI argument.\n", argv[i]);
             return UNKNOWN_CLI_ARGUMENT;
         }
     }

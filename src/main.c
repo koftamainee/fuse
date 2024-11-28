@@ -19,17 +19,6 @@ int main(int argc, char* argv[]) {
 
     clock_gettime(CLOCK_MONOTONIC, &start);
 
-    /* TEMPORARY: creating logger instances */
-    FILE* fptr = fopen("fuse.log", "w");
-    log_set_level(LOG_TRACE);
-    log_add_fp(fptr, LOG_TRACE);
-    log_add_fp(stderr, LOG_ERROR);
-
-    getlogin_r((char*)username, sizeof(username));
-    log_info("Fuse started by %s", username);
-
-    system("pwd && whoami");
-
     err = parse_cli_arguments(argc, argv, &options);
     if (err != 0 && err != UNKNOWN_CLI_ARGUMENT) {  // that is bad
         string_free(options.input_file);
@@ -38,11 +27,28 @@ int main(int argc, char* argv[]) {
         return err;
     }
 
+    if (err == UNKNOWN_CLI_ARGUMENT) {
+        print_help();
+        string_free(options.input_file);
+        string_free(options.config_file);
+        log_info("Program ended with code %d", err);
+        return EXIT_SUCCESS;
+    }
+
+    if (!options.quiet_mode) {
+        err = logger_start();
+        if (err) {
+            return err;
+        }
+    }
+    getlogin_r((char*)username, sizeof(username));
+    log_info("Fuse started by %s", username);
+
     if (options.log_user_interaction) {
         log_set_user_interaction(1);
     }
 
-    if (options.show_help || err == UNKNOWN_CLI_ARGUMENT) {
+    if (options.show_help) {
         print_help();
         string_free(options.input_file);
         string_free(options.config_file);

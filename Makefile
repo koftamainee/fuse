@@ -3,7 +3,7 @@ BUILD_DIR = build
 INCLUDE_DIR = include
 OBJ_DIR = $(BUILD_DIR)/obj
 CONFIG_FILE = install_config.ini
-SERTIFICATE_FILE = certificate.txt
+CERT_FILE = certificate.txt
 
 CC = cc
 
@@ -57,34 +57,33 @@ $(OBJ_DIR)/%.o: $(INCLUDE_DIR)/src/%
 	$(CC) $(CFLAGS) -I$(INCLUDE_DIR) -c $< -o $@
 
 # Docs and License
-user_man: check_pdflatex
-	@mkdir -p $(BUILD_DIR)/docs
+user_man: $(BUILD_DIR)/docs/user_man.pdf
+in_instruct: $(BUILD_DIR)/docs/in_instruct.pdf
+an_instruct: $(BUILD_DIR)/docs/an_instruct.pdf
+license: $(BUILD_DIR)/docs/LICENSE.pdf
+
+$(BUILD_DIR)/docs/user_man.pdf: docs/user_man.tex | $(BUILD_DIR)/docs check_pdflatex
 	@echo -e "[1/4]$(COLOR_GREEN) Compiling user_man.tex$(COLOR_RESET)"
-	@pdflatex docs/user_man.tex >> /dev/null
-	@rm -rf user_man.aux user_man.log
-	@mv user_man.pdf build/docs/user_man.pdf
+	@pdflatex -output-directory=$(BUILD_DIR)/docs docs/user_man.tex >> /dev/null
+	@rm -f $(BUILD_DIR)/docs/user_man.aux $(BUILD_DIR)/docs/user_man.log
 
-in_instruct: check_pdflatex
-	@mkdir -p $(BUILD_DIR)/docs
+$(BUILD_DIR)/docs/in_instruct.pdf: docs/in_instruct.tex | $(BUILD_DIR)/docs check_pdflatex
 	@echo -e "[2/4]$(COLOR_GREEN) Compiling in_instruct.tex$(COLOR_RESET)"
-	@pdflatex docs/in_instruct.tex >> /dev/null
-	@rm -rf in_instruct.aux in_instruct.log
-	@mv in_instruct.pdf build/docs/in_instruct.pdf
+	@pdflatex -output-directory=$(BUILD_DIR)/docs docs/in_instruct.tex >> /dev/null
+	@rm -f $(BUILD_DIR)/docs/in_instruct.aux $(BUILD_DIR)/docs/in_instruct.log
 
-an_instruct: check_pdflatex
-	@mkdir -p $(BUILD_DIR)/docs
+$(BUILD_DIR)/docs/an_instruct.pdf: docs/an_instruct.tex | $(BUILD_DIR)/docs check_pdflatex
 	@echo -e "[3/4]$(COLOR_GREEN) Compiling an_instruct.tex$(COLOR_RESET)"
-	@pdflatex docs/an_instruct.tex >> /dev/null
-	@rm -rf an_instruct.aux an_instruct.log
-	@mv an_instruct.pdf build/docs/an_instruct.pdf
+	@pdflatex -output-directory=$(BUILD_DIR)/docs docs/an_instruct.tex >> /dev/null
+	@rm -f $(BUILD_DIR)/docs/an_instruct.aux $(BUILD_DIR)/docs/an_instruct.log
 
-license: check_pdflatex
-	@mkdir -p $(BUILD_DIR)/docs
+$(BUILD_DIR)/docs/LICENSE.pdf: docs/LICENSE.tex | $(BUILD_DIR)/docs check_pdflatex
 	@echo -e "[4/4]$(COLOR_GREEN) Compiling LICENSE.tex$(COLOR_RESET)"
-	@pdflatex docs/LICENSE.tex >> /dev/null
-	@rm -rf LICENSE.aux LICENSE.log
-	@mv LICENSE.pdf build/docs/LICENSE.pdf
+	@pdflatex -output-directory=$(BUILD_DIR)/docs docs/LICENSE.tex >> /dev/null
+	@rm -f $(BUILD_DIR)/docs/LICENSE.aux $(BUILD_DIR)/docs/LICENSE.log
 
+$(BUILD_DIR)/docs:
+	@mkdir -p $(BUILD_DIR)/docs
 docs: user_man in_instruct an_instruct license
 
 # Configuration and checkings
@@ -135,10 +134,32 @@ endif
 	@sudo mkdir -p $(DOCS_PATH) && sudo chown $(shell whoami) $(DOCS_PATH)
 
 	@echo -e "📝  Checking the certificate for correctness"
-# TODO: certificate checking (1 and 2 points)
+	@awk '/^Certificate of Free Use$$/ {found[1]=1} \
+		      /^User: .+$$/ {found[2]=1} \
+		      /^E-mail: [a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$$/ {found[3]=1} \
+		      /^Phone: \+[0-9]{8,15}$$/ {found[4]=1} \
+		      /^License: MIT License$$/ {found[5]=1} \
+		      /^Install Date: [0-9]{4}-[0-9]{2}-[0-9]{2}$$/ {found[6]=1} \
+		      END { \
+		        if (length(found) == 6) { \
+		          print "✅  $(COLOR_GREEN)Certificate is valid.$(COLOR_RESET)"; \
+		        } else { \
+		          print "🔏  $(COLOR_RED)Certificate is invalid. Missing fields:$(COLOR_RESET)"; \
+		          if (!found[1]) print "- Certificate of Free Use"; \
+		          if (!found[2]) print "- User field"; \
+		          if (!found[3]) print "- Valid email"; \
+		          if (!found[4]) print "- Valid phone"; \
+		          if (!found[5]) print "- License"; \
+		          if (!found[6]) print "- Install Date"; \
+		          exit 1; \
+		        } \
+		      }' $(CERT_FILE)
 
 	@echo -e "🔑  Change certificate owner to root"
-# TODO
+	@sudo cp $(CERT_FILE) $(CERT_PATH)/$(CERT_FILE)
+	@sudo chown root $(CERT_PATH)/$(CERT_FILE)
+	@sudo chmod 0644 $(CERT_PATH)/$(CERT_FILE)
+
 	@sudo rm -rf /usr/bin/$(TARGET)
 	@echo -e "🏄  Installing $(TARGET_NAME) binary"
 	@sudo cp $(BUILD_DIR)/$(TARGET) $(BIN_PATH)
@@ -148,10 +169,10 @@ ifneq ($(BIN_PATH),/usr/bin)
 	@sudo ln -sf $(BIN_PATH)/$(TARGET) /usr/bin/$(TARGET)
 endif
 
-	@sudo ln -sfn /etc/$(TARGET) $(BIN_PATH)/etc
-	@sudo ln -sfn $(SAVE_PATH) $(BIN_PATH)/saves
-	@sudo ln -sfn $(TEMP_PATH) $(BIN_PATH)/tmp
-	@sudo ln -sfn $(DOCS_PATH) $(BIN_PATH)/docs
+	@sudo ln -sf /etc/$(TARGET) $(BIN_PATH)/etc
+	@sudo ln -sf $(SAVE_PATH) $(BIN_PATH)/saves
+	@sudo ln -sf $(TEMP_PATH) $(BIN_PATH)/tmp
+	@sudo ln -sf $(DOCS_PATH) $(BIN_PATH)/docs
 
 
 	@echo -e "🤖  Creating uninstalling scripts"
@@ -172,7 +193,7 @@ clean_config:
 
 clean_certificate:
 	@echo -e "🧹  $(COLOR_YELLOW)Cleaning temporary certificate file$(COLOR_RESET)"
-	@rm -rf $(SERTIFICATE_FILE)
+	@rm -rf $(CERT_FILE)
 
 clean_compile: clean_tmp clean_docs
 	@echo -e "🧹  $(COLOR_YELLOW)Cleaning fuse binary$(COLOR_RESET)"

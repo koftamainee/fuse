@@ -110,8 +110,8 @@ echo "🔧  Please specify the installation paths."
 read -p "⚙️  Enter path for the Fuse installation [/usr/lib]: " bin_path
 bin_path=${bin_path:-/usr/lib}
 
-read -p "📂  Enter path for the certificate installation [/usr/etc/fuse]: " cert_path
-cert_path=${cert_path:-/usr/etc/fuse}
+read -p "📂  Enter path for the certificate installation [/etc/fuse]: " cert_path
+cert_path=${cert_path:-/etc/fuse}
 
 read -p "🗃️  Enter path for temporary files [/tmp/$USER/fuse]: " temp_path
 temp_path=${temp_path:-/tmp/$USER/fuse}

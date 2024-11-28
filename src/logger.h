@@ -33,4 +33,6 @@ void log_log(log_level level, const char *file, int line, const char *fmt, ...);
 void vlog_log(log_level level, const char *file, int line, const char *fmt,
               va_list ap);
 
+err_t logger_start();
+
 #endif
