@@ -26,7 +26,7 @@ COLOR_RED=\033[31m
 COLOR_YELLOW=\033[33m
 
 # Binary compilation
-compile: message_hello check_config init_config_vars message_start_compilation check_cc $(TARGET_PATH)
+compile: message_hello check_config message_start_compilation check_cc $(TARGET_PATH)
 
 message_hello:
 ifeq ($(shell id -u),0)
@@ -62,22 +62,22 @@ in_instruct: $(BUILD_DIR)/docs/in_instruct.pdf
 an_instruct: $(BUILD_DIR)/docs/an_instruct.pdf
 license: $(BUILD_DIR)/docs/LICENSE.pdf
 
-$(BUILD_DIR)/docs/user_man.pdf: docs/user_man.tex | $(BUILD_DIR)/docs check_pdflatex
+$(BUILD_DIR)/docs/user_man.pdf: docs/user_man.tex $(BUILD_DIR)/docs check_pdflatex
 	@echo -e "[1/4]$(COLOR_GREEN) Compiling user_man.tex$(COLOR_RESET)"
 	@pdflatex -output-directory=$(BUILD_DIR)/docs docs/user_man.tex >> /dev/null
 	@rm -f $(BUILD_DIR)/docs/user_man.aux $(BUILD_DIR)/docs/user_man.log
 
-$(BUILD_DIR)/docs/in_instruct.pdf: docs/in_instruct.tex | $(BUILD_DIR)/docs check_pdflatex
+$(BUILD_DIR)/docs/in_instruct.pdf: docs/in_instruct.tex $(BUILD_DIR)/docs check_pdflatex
 	@echo -e "[2/4]$(COLOR_GREEN) Compiling in_instruct.tex$(COLOR_RESET)"
 	@pdflatex -output-directory=$(BUILD_DIR)/docs docs/in_instruct.tex >> /dev/null
 	@rm -f $(BUILD_DIR)/docs/in_instruct.aux $(BUILD_DIR)/docs/in_instruct.log
 
-$(BUILD_DIR)/docs/an_instruct.pdf: docs/an_instruct.tex | $(BUILD_DIR)/docs check_pdflatex
+$(BUILD_DIR)/docs/an_instruct.pdf: docs/an_instruct.tex $(BUILD_DIR)/docs check_pdflatex
 	@echo -e "[3/4]$(COLOR_GREEN) Compiling an_instruct.tex$(COLOR_RESET)"
 	@pdflatex -output-directory=$(BUILD_DIR)/docs docs/an_instruct.tex >> /dev/null
 	@rm -f $(BUILD_DIR)/docs/an_instruct.aux $(BUILD_DIR)/docs/an_instruct.log
 
-$(BUILD_DIR)/docs/LICENSE.pdf: docs/LICENSE.tex | $(BUILD_DIR)/docs check_pdflatex
+$(BUILD_DIR)/docs/LICENSE.pdf: docs/LICENSE.tex $(BUILD_DIR)/docs check_pdflatex
 	@echo -e "[4/4]$(COLOR_GREEN) Compiling LICENSE.tex$(COLOR_RESET)"
 	@pdflatex -output-directory=$(BUILD_DIR)/docs docs/LICENSE.tex >> /dev/null
 	@rm -f $(BUILD_DIR)/docs/LICENSE.aux $(BUILD_DIR)/docs/LICENSE.log
@@ -121,6 +121,8 @@ install: check_config $(TARGET_PATH) docs
 ifneq ($(shell id -u),0)
 	@echo -e "✋  $(COLOR_RED)Running \"make install\" require root access$(COLOR_RESET)"
 	@echo -e "🔐  $(COLOR_YELLOW)Entering sudo-enabled environment...$(COLOR_RESET)"
+else
+	@echo -e "⚠️  $(COLOR_YELLOW)Running as root. Potentially unsafe.$(COLOR_RESET)"
 endif
 	@echo -e "📁  Creating directories"
 	@sudo mkdir -p /etc/$(TARGET)
@@ -232,7 +234,7 @@ remove_all:
     fi
 
 
-.PHONY: all clean configure check_config init_config_vars install message_hello message_start_compilation
+.PHONY: all clean configure check_config install message_hello message_start_compilation
 
 BIN_PATH  = $(shell awk -F '=' '/bin_path/{print $$2}' install_config.ini)
 CERT_PATH = $(shell awk -F '=' '/cert_path/{print $$2}' install_config.ini)

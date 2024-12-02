@@ -1,13 +1,12 @@
 #define _POSIX_C_SOURCE 199506L
 
 #include <bits/time.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 
 #include "../include/errors.h"
+#include "../include/logger.h"
 #include "cli.h"
-#include "logger.h"
 #include "menu.h"
 
 int main(int argc, char* argv[]) {

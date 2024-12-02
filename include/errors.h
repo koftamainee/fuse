@@ -9,6 +9,7 @@ typedef int32_t err_t;
 #define MEMORY_ALLOCATION_ERROR (-2)
 #define ERROR_MAX_LOGGER_COUNT_REACHED (-3)
 #define ERROR_OPPENING_THE_FILE (-4)
+#define INVALID_BASE (-5)
 
 #define UNKNOWN_CLI_ARGUMENT (1)
 #define ERROR_READING_FROM_STDIN (2)
