@@ -69,6 +69,8 @@ err_t start_interactive_menu(CLIOptions* options) {
                 }
                 options->base_input = input_number;
                 log_trace("base_input set to %d", input_number);
+                logprintf("Press enter to continue...");
+                getchar();
                 break;
 
             case 5:
@@ -85,6 +87,8 @@ err_t start_interactive_menu(CLIOptions* options) {
                 }
                 options->base_output = input_number;
                 log_trace("base_output set to %d", input_number);
+                logprintf("Press enter to continue...");
+                getchar();
                 break;
 
             case 6:
