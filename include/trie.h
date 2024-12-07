@@ -4,21 +4,24 @@
 #include "cstring.h"
 #include "errors.h"
 
-// a-z + A-Z + 0-9 + _
-#define ALPHABET_SIZE 63
+typedef int tvalue;
 
 typedef struct TrieNode {
-    struct TrieNode *childs[ALPHABET_SIZE];
-    String data;
-    int is_end_of_word;
+    struct TrieNode **childs;
+    tvalue data;
 } TrieNode;
 
-typedef TrieNode Trie;
+typedef struct Trie {
+    TrieNode *root;
+    String alphabet;
+    size_t alphabet_size;
+    int (*is_in_alphabet)(char c);
+} Trie;
 
-Trie *trie_init();
-err_t trie_insert(Trie *root, const String key, const String value);
-err_t trie_search(const Trie *root, const String key, String *result);
-err_t trie_delete(Trie *root, const String key);
-void trie_free(Trie *root);
+err_t trie_init(Trie *t, String alphabet, int (*is_in_alphabet)(char c));
+err_t trie_insert(Trie *t, const String key, tvalue value);
+err_t trie_search(const Trie *t, const String key, tvalue *result);
+err_t trie_delete(Trie *t, const String key);
+void trie_free(Trie *t);
 
 #endif

@@ -39,7 +39,6 @@ static void log_to_stream(FILE* stream, log_level level, const char* file,
 }
 
 void log_set_level(log_level level) { L.level = level; }
-
 void log_set_user_interaction(int enable) { L.log_IO_interaction = enable; }
 
 err_t log_add_fp(FILE* fp, log_level level) {

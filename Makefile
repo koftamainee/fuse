@@ -26,7 +26,7 @@ COLOR_RED=\033[31m
 COLOR_YELLOW=\033[33m
 
 # Binary compilation
-compile: message_hello check_config message_start_compilation check_cc $(TARGET_PATH)
+compile: message_hello check_config message_start_compilation check_cc $(TARGET_PATH) docs
 
 message_hello:
 ifeq ($(shell id -u),0)
