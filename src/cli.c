@@ -8,8 +8,8 @@
 #include <string.h>
 #include <sys/types.h>
 
+#include "../include/logger.h"
 #include "../include/project_version.h"
-#include "logger.h"
 
 err_t parse_cli_arguments(int argc, char *argv[], CLIOptions *options) {
     int i;

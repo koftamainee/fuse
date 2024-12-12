@@ -4,8 +4,8 @@
 #include <stdlib.h>
 #include <sys/types.h>
 
+#include "../include/logger.h"
 #include "cli.h"
-#include "logger.h"
 
 void show_menu() {
     clear_screen();

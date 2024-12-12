@@ -7,7 +7,8 @@ CERT_FILE = certificate.txt
 
 CC = cc
 
-CFLAGS = -Wall -Wextra -O2 -std=c99 -g
+CFLAGS = -Wall -Wextra -O2 -std=c99 -g -fsanitize=address -fsanitize=leak -fno-omit-frame-pointer
+# all errors, extra errors, 02 optimization level, memory acess sanitaixer, memory leaks sanitizer, save frame pointers
 
 SRCS += $(wildcard $(SRC_DIR)/*.c)
 SRCS += $(wildcard $(INCLUDE_DIR)/src/*.c)
@@ -26,7 +27,7 @@ COLOR_RED=\033[31m
 COLOR_YELLOW=\033[33m
 
 # Binary compilation
-compile: message_hello check_config init_config_vars message_start_compilation check_cc $(TARGET_PATH)
+compile: message_hello check_config message_start_compilation check_cc $(TARGET_PATH) docs
 
 message_hello:
 ifeq ($(shell id -u),0)
@@ -121,6 +122,8 @@ install: check_config $(TARGET_PATH) docs
 ifneq ($(shell id -u),0)
 	@echo -e "✋  $(COLOR_RED)Running \"make install\" require root access$(COLOR_RESET)"
 	@echo -e "🔐  $(COLOR_YELLOW)Entering sudo-enabled environment...$(COLOR_RESET)"
+else
+	@echo -e "⚠️  $(COLOR_YELLOW)Running as root. Potentially unsafe.$(COLOR_RESET)"
 endif
 	@echo -e "📁  Creating directories"
 	@sudo mkdir -p /etc/$(TARGET)
@@ -232,7 +235,7 @@ remove_all:
     fi
 
 
-.PHONY: all clean configure check_config init_config_vars install message_hello message_start_compilation
+.PHONY: all clean configure check_config install message_hello message_start_compilation
 
 BIN_PATH  = $(shell awk -F '=' '/bin_path/{print $$2}' install_config.ini)
 CERT_PATH = $(shell awk -F '=' '/cert_path/{print $$2}' install_config.ini)
