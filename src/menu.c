@@ -10,21 +10,21 @@
 void show_menu() {
     clear_screen();
     logprintf(
-        "==============================\n"
-        "      Interactive Menu\n"
-        "==============================\n"
-        "1. Run input file\n"
-        "2. Load input file\n"
-        "3. Load configuration\n"
-        "4. Set Base input\n"
-        "5. Set base output\n"
-        "6. Set base assign\n"
-        "7. Switch debug/release modes\n"
-        "8. Show application info\n"
-        "9. Help\n"
-        "0. Exit\n"
-        "==============================\n"
-        "==> ");
+        "┌─────────────────────────────┐\n"
+        "│       Interactive Menu      │\n"
+        "├─────────────────────────────┤\n"
+        "│ 1. Run Program              │\n"
+        "│ 2. Load Input File          │\n"
+        "│ 3. Load Configuration       │\n"
+        "│ 4. Set Base Input           │\n"
+        "│ 5. Set Base Output          │\n"
+        "│ 6. Set Base Assign          │\n"
+        "│ 7. Switch Debug/Release Mode│\n"
+        "│ 8. Show Application Info    │\n"
+        "│ 9. Help                     │\n"
+        "│ 0. Exit                     │\n"
+        "└─────────────────────────────┘\n"
+        "Select an option: ");
 }
 
 err_t start_interactive_menu(CLIOptions* options) {

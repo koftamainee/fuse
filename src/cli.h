@@ -17,7 +17,7 @@ typedef struct {
     int log_user_interaction;  // -d
     int quiet_mode;            // -s
     int preserve_temp_files;   // -t
-    int interactive_menu;      // -m
+    int interactive_menu;      // -m, --menu
     int show_help;             // -h, --help
     int show_info;             // -i, --info
     int show_version;          // -v, --version

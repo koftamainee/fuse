@@ -4,23 +4,24 @@
 \usepackage{xcolor}
 \usepackage{graphicx}
 
-% Define color schemes for code snippets
-\definecolor{codegray}{rgb}{0.5,0.5,0.5}
-\definecolor{codeblue}{rgb}{0.3,0.3,0.7}
+\definecolor{codeblue}{rgb}{0.1,0.1,0.7}
 \definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.95}
 
-\lstset{
-  language=make,
-  basicstyle=\ttfamily\small,
-  keywordstyle=\color{codeblue},
-  stringstyle=\color{codegreen},
-  commentstyle=\color{codegray},
-  breaklines=true,
-  frame=single,
-  numbers=left,
-  numberstyle=\tiny\color{codegray},
-  tabsize=2
+\lstdefinestyle{codestyle}{
+    backgroundcolor=\color{backcolour},
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{codeblue},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    numbers=left,
+    tabsize=4
 }
+
+\lstset{style=codestyle}
 
 \title{\textbf{Installation Guide for Fuse}}
 \author{}
@@ -30,10 +31,10 @@
 
 \maketitle
 
-\section*{Introduction}
+\section{Introduction}
 This document provides a step-by-step guide to install and set up Fuse. The installation process uses a Makefile for building the source code and an installation script \texttt{x.sh} for configuration and setup.
 
-\section*{Prerequisites}
+\section{Prerequisites}
 Ensure the following tools and dependencies are installed on your system:
 \begin{itemize}
 	\item \texttt{gcc} or any C compiler
@@ -42,7 +43,7 @@ Ensure the following tools and dependencies are installed on your system:
 	\item Root (\texttt{sudo}) access for installation
 \end{itemize}
 
-\section*{Quick Install}
+\section{Quick Install}
 To quickly configure, compile, and install Fuse, you can simply run:
 \begin{lstlisting}[language=bash]
 make && make install
@@ -56,16 +57,16 @@ This command will:
 	\item Install the program system-wide.
 \end{itemize}
 
-\section*{Installation Process}
+\section{Installation Process}
 
-\subsection*{Step 1: Configure the Project}
+\subsection{Configure the Project}
 Run the provided installation script to configure the project:
 \begin{lstlisting}[language=bash]
 ./x.sh
 \end{lstlisting}
 This script sets up essential configuration files like \texttt{install\_config.ini} and validates the setup environment.
 
-\subsection*{Step 2: Build Fuse}
+\subsection{Build Fuse}
 Compile Fuse using the Makefile by running the command:
 \begin{lstlisting}[language=bash]
 make compile
@@ -77,7 +78,7 @@ This will:
 	\item Compile docs and put them into \texttt{build/docs/} directory
 \end{itemize}
 
-\subsubsection*{Generate Documentation}
+\subsubsection{Generate Documentation}
 If you want to generate only documentation, use:
 \begin{lstlisting}[language=bash]
 make docs
@@ -102,7 +103,7 @@ make LICENSE
 \end{lstlisting}
 This allows for selective compilation of documentation as needed.
 
-\subsection*{Step 3: Install Fuse}
+\subsection{Install Fuse}
 Run the following command to install Fuse system-wide:
 \begin{lstlisting}[language=bash]
 make install
@@ -116,7 +117,7 @@ This step:
 	\item Validates the certificate file \texttt{certificate.txt}.
 \end{itemize}
 
-\section*{Validation Checks}
+\section{Validation Checks}
 During the installation, the following validations are performed:
 \begin{itemize}
 	\item Ensure the C and LaTeX compilers are installed.
@@ -126,7 +127,7 @@ During the installation, the following validations are performed:
 
 \newpage
 
-\section*{Cleaning}
+\section{Cleaning}
 To clean up generated files and artifacts, use the following commands:
 \begin{itemize}
 	\item Clean temporary files:
@@ -151,7 +152,7 @@ make clean_all
 	      \end{lstlisting}
 \end{itemize}
 
-\section*{Uninstallation Process}
+\section{Uninstallation Process}
 To uninstall Fuse and remove related files, use the following commands:
 
 \begin{itemize}
@@ -172,17 +173,17 @@ make remove_all
 \end{itemize}
 These commands run bash scripts from \texttt{/etc/fuse} with same name is target. You can delete source code of this project but still be capable of uninstalling Fuse.
 
-\section*{Troubleshooting}
-\subsection*{Compilation Errors}
+\section{Troubleshooting}
+\subsection{Compilation Errors}
 Ensure the necessary compiler and tools are installed. Verify paths are set correctly during execution of installation script.
 
-\subsection*{Permission Errors}
+\subsection{Permission Errors}
 Make sure you have root access when running the \texttt{make install} command.
 
-\section*{Contact Information}
+\section{Contact Information}
 For further assistance, contact me from my github profile, where Fuse is situated.
 
-\vspace*{\fill}
+\vspace{\fill}
 
 \begin{center}Created in \raisebox{-0.5ex}{\includegraphics[height=1em]{assets/linux.png}} \& \raisebox{-0.5ex}{\includegraphics[height=1em]{assets/neovim.png}}
 	with \raisebox{-0.5ex}{\includegraphics[height=1em]{assets/love.png}}\end{center}
