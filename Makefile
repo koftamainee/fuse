@@ -65,7 +65,7 @@ license: $(BUILD_DIR)/docs/LICENSE.pdf
 
 $(BUILD_DIR)/docs/user_man.pdf: docs/user_man.tex | $(BUILD_DIR)/docs check_pdflatex
 	@echo -e "[1/4]$(COLOR_GREEN) Compiling user_man.tex$(COLOR_RESET)"
-	@pdflatex -output-directory=$(BUILD_DIR)/docs docs/user_man.tex
+	@pdflatex -output-directory=$(BUILD_DIR)/docs docs/user_man.tex >> /dev/null
 	@rm -f $(BUILD_DIR)/docs/user_man.aux $(BUILD_DIR)/docs/user_man.log $(BUILD_DIR)/docs/user_man.out indent.log
 	@cp $(BUILD_DIR)/docs/user_man.pdf $(DOCS_PATH)/user_man.pdf
 
