@@ -40,7 +40,8 @@ err_t parse_cli_arguments(int argc, char *argv[], CLIOptions *options) {
                    (strcmp(argv[i], "--version") == 0) ||
                    strcmp(argv[i], "--ver") == 0) {
             options->show_version = 1;
-        } else if (strcmp(argv[i], "-m") == 0) {
+        } else if (strcmp(argv[i], "-m") == 0 ||
+                   strcmp(argv[i], "--menu") == 0) {
             options->interactive_menu = 1;
         } else if (strcmp(argv[i], "-s") == 0) {
             options->quiet_mode = 1;
