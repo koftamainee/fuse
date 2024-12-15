@@ -125,7 +125,7 @@ err_t logger_start() {
     struct tm* current_time = localtime(&t);
     char filename_buffer[64];
     strftime(filename_buffer, sizeof(filename_buffer),
-             "/var/log/fuse/%Y-%m-%d_%H-%m-%s.log", current_time);
+             "/var/log/fuse/%Y-%m-%d_%H:%M:%S.log", current_time);
     logs_file = fopen(filename_buffer, "w");
     if (logs_file == NULL) {
         fprintf(stderr, "Error oppening a file for logging\n");

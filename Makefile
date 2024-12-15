@@ -4,6 +4,7 @@ INCLUDE_DIR = include
 OBJ_DIR = $(BUILD_DIR)/obj
 CONFIG_FILE = install_config.ini
 CERT_FILE = certificate.txt
+ANALYZER = fuse-analyzer
 
 CC = cc
 
@@ -180,6 +181,10 @@ endif
 	@sudo ln -sf $(SAVE_PATH) $(BIN_PATH)/saves
 	@sudo ln -sf $(TEMP_PATH) $(BIN_PATH)/tmp
 	@sudo ln -sf $(DOCS_PATH) $(BIN_PATH)/docs
+
+	@echo -e "📊  Installing fuse-analyzer"
+	@sudo cp -r $(ANALYZER)/ /etc/$(TARGET)/$(ANALYZER)
+	@sudo ln -sf /etc/$(TARGET)/$(ANALYZER)/$(ANALYZER).sh /usr/bin/$(ANALYZER)
 
 
 	@echo -e "🤖  Creating uninstalling scripts"

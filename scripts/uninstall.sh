@@ -15,6 +15,10 @@ sudo rm -rf $DOCS_PATH
 echo -e "🧹 \033[33m Cleaning temp files directory \033[0m"
 sudo rm -rf $TEMP_PATH
 
-echo -e "🧹 \033[33m Cleaning/etc/fuse/config.  \033[0m"
+echo -e "🧹 \033[33m Cleaning/etc/fuse/  \033[0m"
+
+
+
+
 sudo rm -rf /etc/fuse/
 echo -e "🧹 \033[33m Fuse uninstalled from your computer \033[0m"

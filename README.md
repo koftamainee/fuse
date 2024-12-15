@@ -8,6 +8,7 @@ The **Fuse** interpreter is a customizable application designed to execute progr
 maybe soon i will make AUR and nixpkgs packages....
 # Building from source
 ## Dependencies
+- **Bash** (obviously)
 - **C compiler** (gcc, clang, etc.)
 - **make** build system
 - **pdflatex** for docs compilation
