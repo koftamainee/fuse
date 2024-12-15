@@ -16,6 +16,6 @@ sudo rm -rf $TEMP_PATH
 
 echo -e "🧹 \033[33m Cleaning logs \033[0m"
 sudo rm -rf /var/log/fuse
-echo -e "🧹 \033[33m Cleaning configurations \033[0m"
+echo -e "🧹 \033[33m Cleaning /etc/fuse/ \033[0m"
 sudo rm -rf /etc/fuse/
 echo -e "🧹 \033[33m Fuse uninstalled from your computer \033[0m"
