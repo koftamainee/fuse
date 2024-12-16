@@ -1,0 +1,8 @@
+1. author info: AUTHOR
+2. system info: README.md
+3. text installation guide: INSTALL.md
+4. License: text-based - LICENSE, LaTeX-based - docs/LICENSE.tex
+5. LaTeX installation guide: docs/in_instruct.tex
+6. LaTeX user manual: docs/in_instruct.tex
+7. LaTeX log analysis manual: docs/an_instruct.tex
+

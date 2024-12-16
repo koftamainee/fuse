@@ -64,19 +64,25 @@ Run the provided installation script to configure the project:
 \begin{lstlisting}[language=bash]
 $ ./x.sh
 \end{lstlisting}
-This script sets up essential configuration files like \texttt{install\_config.ini} and validates the setup environment.
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.75\textwidth]{assets/x\_sh.png}
+	\caption{This script sets up essential configuration files like \texttt{install\_config.ini} and validates the setup environment.}
+\end{figure}
+
+\newpage
 
 \subsection{Build Fuse}
 Compile Fuse using the Makefile by running the command:
 \begin{lstlisting}[language=bash]
 $ make compile
 \end{lstlisting}
-This will:
-\begin{itemize}
-	\item Build all source files from the \texttt{src/} and \texttt{include/src/} directories.
-	\item Generate the binary in the \texttt{build/} directory.
-	\item Compile docs and put them into \texttt{build/docs/} directory
-\end{itemize}
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.75\textwidth]{assets/make\_compile.png}
+	\caption{This will build all source files from the \texttt{src/} and \texttt{include/src/} directories, generate the binary in the \texttt{build/} directory, compile docs and put them into \texttt{build/docs/} directory}
+\end{figure}
+
 
 \subsubsection{Generate Documentation}
 If you want to generate only documentation, use:
@@ -109,13 +115,12 @@ Run the following command to install Fuse system-wide:
 $ make install
 \end{lstlisting}
 \textbf{Warning:} Avoid running \texttt{make install} directly with \texttt{sudo}. This may cause files in your user directory to require root access, leading to potential permission issues.
-\newline
-This step:
-\begin{itemize}
-	\item Copies configuration files to \texttt{/etc/fuse/}.
-	\item Sets up directories for logs, temporary files, and certificates.
-	\item Validates the certificate file \texttt{certificate.txt}.
-\end{itemize}
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.75\textwidth]{assets/make\_install.png}
+	\caption{This step will copiyconfiguration files to \texttt{/etc/fuse/}, set up directories for logs, temporary files, and certificates, validate the certificate file \texttt{certificate.txt}.}
+\end{figure}
+
 
 \section{Validation Checks}
 During the installation, the following validations are performed:
