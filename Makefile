@@ -92,6 +92,12 @@ $(BUILD_DIR)/docs:
 	@mkdir -p $(BUILD_DIR)/docs
 docs: user_man in_instruct an_instruct license
 
+$(BUILD_DIR)/presentation: 
+		@mkdir -p $(BUILD_DIR)/presentation
+
+presentation: $(BUILD_DIR)/presentation
+	@pdflatex -output-directory=$(BUILD_DIR)/presentation presentation/presentation.tex 
+
 # Configuration and checkings
 configure:
 	./x.sh
@@ -244,7 +250,7 @@ remove_all:
     fi
 
 
-.PHONY: all clean configure check_config install message_hello message_start_compilation
+.PHONY: all clean configure check_config install message_hello message_start_compilation presentation
 
 BIN_PATH  = $(shell awk -F '=' '/bin_path/{print $$2}' install_config.ini)
 CERT_PATH = $(shell awk -F '=' '/cert_path/{print $$2}' install_config.ini)
