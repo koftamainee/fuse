@@ -57,3 +57,5 @@ certificate.txt
 install_config.ini
 fuse.log
 /logs/
+
+/fuse-analyzer-rs/target/

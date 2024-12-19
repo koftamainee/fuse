@@ -160,7 +160,7 @@ execution_count=${#LOG_FILES[@]}
 average_execution_time=$(awk -v total="$total_execution_time" -v count="$execution_count" 'BEGIN { print total / count }')
 echo -e "[==>]  Average execution time: $average_execution_time seconds"
 
-echo -e "[==>]  Total file processed: $total_files_count"
+echo -e "[==>]  Total files processed: $total_files_count"
 
 echo "[==>]  Total Warning count: $total_warn_count"
 if [ -n "$total_warn_lines" ]; then

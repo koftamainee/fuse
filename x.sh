@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # COLOR_RESET=\033[0m
 # COLOR_GREEN=\033[32m
@@ -65,6 +65,7 @@ write_config() {
     echo "full_name=$full_name" >> "$config_file"
     echo "email=$email" >> "$config_file"
     echo "phone=$phone" >> "$config_file"
+    echo "use_rust=$use_rust" >> "$config_file"
 
     echo >> "$config_file"
     echo "[paths]" >> "$config_file"
@@ -122,6 +123,14 @@ save_path=${save_path:-~/fuse/saves}
 read -p "📚  Enter path for documentation [~/$USER/fuse/docs]: " docs_path
 docs_path=${docs_path:-~/fuse/docs}
 
+read -p "⚙️  You want to use fuse-analyzer-rs? [Ny]: " use_rust
+use_rust=${use_rust:-n}
+
+if [ "$use_rust" = y ] || [ "$use_rust" = Y ]; then
+    use_rust=true
+else 
+    use_rust=false
+fi
 
 install_date=$(date +"%Y-%m-%d")
 certificate="Certificate of Free Use\n
