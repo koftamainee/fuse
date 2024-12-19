@@ -5,6 +5,8 @@ OBJ_DIR = $(BUILD_DIR)/obj
 CONFIG_FILE = install_config.ini
 CERT_FILE = certificate.txt
 ANALYZER = fuse-analyzer
+ANALYZER_RS = fuse-analyzer-rs
+
 
 CC = cc
 
@@ -28,7 +30,7 @@ COLOR_RED=\033[31m
 COLOR_YELLOW=\033[33m
 
 # Binary compilation
-compile: message_hello check_config message_start_compilation check_cc $(TARGET_PATH) docs
+compile: message_hello check_config message_start_compilation check_cc $(TARGET_PATH) docs analyzer
 
 message_hello:
 ifeq ($(shell id -u),0)
@@ -57,6 +59,14 @@ $(OBJ_DIR)/%.o: $(INCLUDE_DIR)/src/%
 	@CURRENT=$$(expr $(shell echo $(OBJS) | tr ' ' '\n' | grep -n "$@" | cut -d: -f1) + 0); \
 	echo -e "[$$CURRENT/$(TOTAL)] $(COLOR_GREEN)Building C object $@$(COLOR_RESET)"; \
 	$(CC) $(CFLAGS) -I$(INCLUDE_DIR) -c $< -o $@
+
+analyzer:
+	@if [ "$(USE_RUST)" = "true" ]; then \
+		echo -e "🦀  $(COLOR_YELLOW)Using rust for analyzer, starting compilation. $(COLOR_RESET)"; \
+		cd fuse-analyzer-rs && cargo build --release; \
+	else \
+		echo -e "⚙️  $(COLOR_YELLOW)Using .sh for analyzer, compilation skipped. $(COLOR_RESET)"; \
+	fi
 
 # Docs and License
 user_man: $(BUILD_DIR)/docs/user_man.pdf
@@ -189,9 +199,15 @@ endif
 	@sudo ln -sf $(DOCS_PATH) $(BIN_PATH)/docs
 
 	@echo -e "📊  Installing fuse-analyzer"
-	@sudo cp -r $(ANALYZER)/ /etc/$(TARGET)/$(ANALYZER)
-	@sudo ln -sf /etc/$(TARGET)/$(ANALYZER)/$(ANALYZER).sh /usr/bin/$(ANALYZER)
-
+	@if [ "$(USE_RUST)" = "true" ]; then \
+		sudo mkdir -p /etc/$(TARGET)/$(ANALYZER); \
+		sudo cp $(ANALYZER_RS)/target/release/fuse-analyzer-rs /etc/$(TARGET)/$(ANALYZER)/$(ANALYZER_RS); \
+		sudo cp -r $(ANALYZER)/awk/ /etc/$(TARGET)/$(ANALYZER)/awk; \
+		sudo ln -sf /etc/$(TARGET)/$(ANALYZER)/$(ANALYZER_RS) /usr/bin/$(ANALYZER); \
+	else \
+		sudo cp -r $(ANALYZER)/ /etc/$(TARGET)/$(ANALYZER); \
+		sudo ln -sf /etc/$(TARGET)/$(ANALYZER)/$(ANALYZER).sh /usr/bin/$(ANALYZER); \
+	fi
 
 	@echo -e "🤖  Creating uninstalling scripts"
 	@sudo cp scripts/uninstall.sh /etc/$(TARGET)/uninstall.sh
@@ -216,6 +232,7 @@ clean_certificate:
 clean_compile: clean_tmp clean_docs
 	@echo -e "🧹  $(COLOR_YELLOW)Cleaning fuse binary$(COLOR_RESET)"
 	@rm -rf $(BUILD_DIR)/$(TARGET)
+	@rm -rf $(ANALYZER_RS)/target
 
 clean_docs:
 	@echo -e "🧹  $(COLOR_YELLOW)Cleaning compiled docs$(COLOR_RESET)"
@@ -257,3 +274,4 @@ CERT_PATH = $(shell awk -F '=' '/cert_path/{print $$2}' install_config.ini)
 TEMP_PATH = $(shell awk -F '=' '/temp_path/{print $$2}' install_config.ini)
 SAVE_PATH = $(shell awk -F '=' '/save_path/{print $$2}' install_config.ini)
 DOCS_PATH = $(shell awk -F '=' '/docs_path/{print $$2}' install_config.ini)
+USE_RUST  = $(shell awk -F '=' '/use_rust/{print $$2}' install_config.ini)
