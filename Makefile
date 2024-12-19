@@ -205,7 +205,7 @@ endif
 		sudo cp -r $(ANALYZER)/awk/ /etc/$(TARGET)/$(ANALYZER)/awk; \
 		sudo ln -sf /etc/$(TARGET)/$(ANALYZER)/$(ANALYZER_RS) /usr/bin/$(ANALYZER); \
 	else \
-		sudo cp -r $(ANALYZER)/ /etc/$(TARGET)/$(ANALYZER); \
+		sudo cp -r $(ANALYZER) /etc/$(TARGET)/$(ANALYZER); \
 		sudo ln -sf /etc/$(TARGET)/$(ANALYZER)/$(ANALYZER).sh /usr/bin/$(ANALYZER); \
 	fi
 

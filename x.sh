@@ -126,7 +126,7 @@ docs_path=${docs_path:-~/fuse/docs}
 read -p "⚙️  You want to use fuse-analyzer-rs? [Ny]: " use_rust
 use_rust=${use_rust:-n}
 
-if [ "$use_rust" = y ]; then
+if [ "$use_rust" = y ] || [ "$use_rust" = Y ]; then
     use_rust=true
 else 
     use_rust=false
