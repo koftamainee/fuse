@@ -123,8 +123,8 @@ save_path=${save_path:-~/fuse/saves}
 read -p "📚  Enter path for documentation [~/$USER/fuse/docs]: " docs_path
 docs_path=${docs_path:-~/fuse/docs}
 
-read -p "⚙️  You want to use fuse-analyzer-rs? [Ny]: " use_rust
-use_rust=${use_rust:-n}
+read -p "🦀  You want to use fuse-analyzer-rs? [Yn]: " use_rust
+use_rust=${use_rust:-y}
 
 if [ "$use_rust" = y ] || [ "$use_rust" = Y ]; then
     use_rust=true
