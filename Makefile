@@ -30,7 +30,7 @@ COLOR_RED=\033[31m
 COLOR_YELLOW=\033[33m
 
 # Binary compilation
-compile: message_hello check_config message_start_compilation check_cc $(TARGET_PATH) docs analyzer
+compile: message_hello check_config message_start_compilation check_cc check_cargo $(TARGET_PATH) docs analyzer
 
 message_hello:
 ifeq ($(shell id -u),0)
@@ -114,12 +114,24 @@ configure:
 
 check_cc:
 	@if command -v cc >/dev/null 2>&1; then \
-		COMPILER=$$(cc --version | head -n 1); \
+		COMPILER=$$($(CC) --version | head -n 1); \
 		echo -e "$(COLOR_GREEN)✅  C compiler found: $$COMPILER$(COLOR_RESET)"; \
 	else \
 		echo -e "$(COLOR_RED)❌  C compiler not found. Please install it.$(COLOR_RESET)"; \
 		exit 1; \
 	fi
+
+check_cargo:
+	@if [ "$(USE_RUST)" = "true" ]; then \
+		if command -v cc >/dev/null 2>&1; then \
+			COMPILER=$$(cargo --version | head -n 1); \
+			echo -e "$(COLOR_GREEN)✅  Rust build system found: $$COMPILER$(COLOR_RESET)"; \
+		else \
+			echo -e "$(COLOR_RED)❌  C compiler not found. Please install it.$(COLOR_RESET)"; \
+			exit 1; \
+		fi; \
+	fi
+
 
 check_pdflatex:
 	@if command -v pdflatex >/dev/null 2>&1; then \
