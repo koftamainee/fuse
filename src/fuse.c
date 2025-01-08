@@ -28,10 +28,6 @@ err_t convert_infix_to_postfix_notation(const String infix_expression,
         return DEREFERENCING_NULL_PTR;
     }
 
-    if (*postfix_expression != NULL) {
-        log_warn("*postfix_expression is not NULL, potencial memory leak");
-    }
-
     return EXIT_SUCCESS;
 }
 
@@ -50,10 +46,6 @@ err_t calculate_postfix_expression(const String postfix_expression,
     if (base_assign < 2 || base_assign > 36) {
         log_error("Invalid base_assign: %ud", base_assign);
         return INVALID_BASE;
-    }
-
-    if (*result != NULL) {
-        log_warn("*result is not NULL, potencial memory leak");
     }
 
     return EXIT_SUCCESS;
