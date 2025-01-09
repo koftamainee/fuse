@@ -57,7 +57,7 @@ err_t parse_cli_arguments(int argc, char *argv[], CLIOptions *options) {
             options->base_assign = (uint8_t)atoi(argv[++i]);
         } else {
             fprintf(stderr, "%s: Unknown CLI argument.\n", argv[i]);
-            return UNKNOWN_CLI_ARGUMENT;
+            return INVALID_FLAG;
         }
     }
     return EXIT_SUCCESS;
@@ -101,7 +101,7 @@ void print_version() {
         PROJECT_VERSION);
 }
 
-void clear_screen() { system("clear"); }
+void clear_screen() { return; }
 
 err_t read_int_from_user(int *num) {
     char buf[32];  // 32 bytes buf for int32_t

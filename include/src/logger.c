@@ -129,7 +129,7 @@ err_t logger_start() {
     logs_file = fopen(filename_buffer, "w");
     if (logs_file == NULL) {
         fprintf(stderr, "Error oppening a file for logging\n");
-        return ERROR_OPPENING_THE_FILE;
+        return OPENING_THE_FILE_ERROR;
     }
     err = log_add_fp(logs_file, LOG_TRACE);
     if (err) {
@@ -140,4 +140,15 @@ err_t logger_start() {
         return err;
     }
     return EXIT_SUCCESS;
+}
+
+void logger_stop() {
+    int i = 0;
+    FILE* log_fout = NULL;
+    for (i = 0; i < L.loggers_count; ++i) {
+        log_fout = L.loggers[i].fp;
+        if (log_fout != stdout && log_fout != stderr) {
+            fclose(log_fout);
+        }
+    }
 }

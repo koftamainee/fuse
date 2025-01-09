@@ -9,12 +9,7 @@ ANALYZER_RS = fuse-analyzer-rs
 
 CC = cc
 
-CFLAGS = -Wall -Wextra -pedantic -std=c23 -o2 -g3  -fno-omit-frame-pointer \
--fstack-protector-strong -fstack-clash-protection -fsanitize=address \
--fsanitize=undefined -march=native -flto -fdiagnostics-color=always \
--fdiagnostics-show-option
-
-
+CFLAGS = -std=c99 -o2 -g3 -lm 
 
 SRCS += $(wildcard $(SRC_DIR)/*.c)
 SRCS += $(wildcard $(INCLUDE_DIR)/src/*.c)

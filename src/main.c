@@ -19,7 +19,7 @@ int main(int argc, char* argv[]) {
     clock_gettime(CLOCK_MONOTONIC, &start);
 
     err = parse_cli_arguments(argc, argv, &options);
-    if (err != 0 && err != UNKNOWN_CLI_ARGUMENT) {  // that is bad
+    if (err != EXIT_SUCCESS && err != INVALID_CLI_ARGUMENT) {  // that is bad
         string_free(options.input_file);
         string_free(options.config_file);
         time_total =
@@ -34,6 +34,7 @@ int main(int argc, char* argv[]) {
         if (err) {
             string_free(options.input_file);
             string_free(options.config_file);
+            logger_stop();
             time_total = (end.tv_sec - start.tv_sec) +
                          (end.tv_nsec - start.tv_nsec) / 1e9;
             fprintf(stderr, "Program ended with code %d in %.5f seconds", err,
@@ -48,10 +49,11 @@ int main(int argc, char* argv[]) {
 
     // now logger works
 
-    if (err == UNKNOWN_CLI_ARGUMENT) {
+    if (err == INVALID_CLI_ARGUMENT) {
         print_help();
         string_free(options.input_file);
         string_free(options.config_file);
+        logger_stop();
         time_total =
             (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;
         log_info("Program ended with code %d in %.5f seconds", EXIT_SUCCESS,
@@ -67,6 +69,7 @@ int main(int argc, char* argv[]) {
         print_help();
         string_free(options.input_file);
         string_free(options.config_file);
+        logger_stop();
         time_total =
             (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;
         log_info("Program ended with code %d in %.5f seconds", EXIT_SUCCESS,
@@ -78,6 +81,7 @@ int main(int argc, char* argv[]) {
         print_version();
         string_free(options.input_file);
         string_free(options.config_file);
+        logger_stop();
         clock_gettime(CLOCK_MONOTONIC, &end);
         time_total =
             (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;
@@ -90,6 +94,7 @@ int main(int argc, char* argv[]) {
         print_info();
         string_free(options.input_file);
         string_free(options.config_file);
+        logger_stop();
         clock_gettime(CLOCK_MONOTONIC, &end);
         time_total =
             (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;
@@ -115,6 +120,7 @@ int main(int argc, char* argv[]) {
 
     string_free(options.input_file);
     string_free(options.config_file);
+    logger_stop();
     clock_gettime(CLOCK_MONOTONIC, &end);
     time_total =
         (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;

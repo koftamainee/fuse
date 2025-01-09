@@ -4,24 +4,24 @@
 #include "cstring.h"
 #include "errors.h"
 
-typedef int tvalue;
+typedef struct trie_node {
+    int value;
+    int is_end_of_word;
+    struct trie_node *subtrees;
+} trie_node;
 
-typedef struct TrieNode {
-    struct TrieNode **childs;
-    tvalue data;
-} TrieNode;
-
-typedef struct Trie {
-    TrieNode *root;
+typedef struct trie {
     String alphabet;
     size_t alphabet_size;
-    int (*is_in_alphabet)(char c);
-} Trie;
+    trie_node *root;
+} trie;
 
-err_t trie_init(Trie *t, String alphabet, int (*is_in_alphabet)(char c));
-err_t trie_insert(Trie *t, const String key, tvalue value);
-err_t trie_search(const Trie *t, const String key, tvalue *result);
-err_t trie_delete(Trie *t, const String key);
-void trie_free(Trie *t);
+err_t trie_init(trie **t, const char *alphabet);
 
-#endif
+void trie_free(trie *t);
+
+err_t trie_set(trie *t, String key, int value);
+err_t trie_get(trie *t, String key, int *value_placeholder);
+err_t trie_dispose(trie *t, String key);
+
+#endif  // !TRIE_H_

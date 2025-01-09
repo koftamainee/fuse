@@ -1,26 +1,34 @@
 #include "../trie.h"
 
 #include <stdlib.h>
+#include <string.h>
 
-#include "../errors.h"
 #include "../logger.h"
 
-err_t trie_init(Trie *t, String alphabet, int (*is_in_alphabet)(char c)) {
-    if (t == NULL) {
-        log_error("trie is NULL");
+err_t trie_init(trie **t, const char *alphabet) {
+    if (t == NULL || alphabet == NULL) {
+        log_fatal("passed ptr is NULL");
         return DEREFERENCING_NULL_PTR;
     }
-    if (alphabet == NULL) {
-        log_error("alphabet is NULL");
-        return DEREFERENCING_NULL_PTR;
+
+    size_t alphabet_size = strlen(alphabet);
+
+    *t = (trie *)malloc(sizeof(trie));
+    if (*t == NULL) {
+        log_fatal("failed to allocate memory");
+        return MEMORY_ALLOCATION_ERROR;
     }
-    if (is_in_alphabet == NULL) {
-        log_error("is_in_alphabet function is NULL");
-    }
+
+    trie *tr = *t;
+
+    // TODO: finish this funxtion
+    tr->root = NULL;
 
     return EXIT_SUCCESS;
 }
-err_t trie_insert(Trie *t, const String key, tvalue value);
-err_t trie_search(const Trie *t, const String key, tvalue *result);
-err_t trie_delete(Trie *t, const String key);
-void trie_free(Trie *t);
+
+void trie_free(trie *t);
+
+err_t trie_set(trie *t, String key, int value);
+err_t trie_get(trie *t, String key, int *value_placeholder);
+err_t trie_dispose(trie *t, String key);
