@@ -8,8 +8,8 @@
 
 // Optinos fron user obtained by CLI arguments or through interattive menu
 typedef struct {
-    String input_file;         // -f
-    String config_file;        // -c
+    FILE *input_file;          // -f
+    FILE *config_file;         // -c
     uint8_t base_input;        // --base_input
     uint8_t base_output;       // --base_output
     uint8_t base_assign;       // --base_assign

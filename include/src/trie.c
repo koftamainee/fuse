@@ -12,6 +12,7 @@ err_t trie_init(trie **t, const char *alphabet) {
     }
 
     size_t alphabet_size = strlen(alphabet);
+    int i = 0;
 
     *t = (trie *)malloc(sizeof(trie));
     if (*t == NULL) {
@@ -20,14 +21,37 @@ err_t trie_init(trie **t, const char *alphabet) {
     }
 
     trie *tr = *t;
+    tr->alphabet_size = alphabet_size;
+    tr->alphabet = string_from(alphabet);
+    if (tr->alphabet == NULL) {
+        log_fatal("memory allocateion error");
+        free(*t);
+        return MEMORY_ALLOCATION_ERROR;
+    }
 
-    // TODO: finish this funxtion
     tr->root = NULL;
 
     return EXIT_SUCCESS;
 }
 
-void trie_free(trie *t);
+void __trie_free_inner(trie *tr, trie_node *t) {
+    int i = 0;
+    for (i = 0; i < tr->alphabet_size; ++i) {
+        // TODO: ...
+    }
+}
+
+void trie_free(trie *t) {
+    if (t == NULL) {
+        return;
+    }
+
+    trie_node *current = NULL;
+
+    __trie_free_inner(t, t->root);
+    string_free(t->alphabet);
+    free(t);
+}
 
 err_t trie_set(trie *t, String key, int value);
 err_t trie_get(trie *t, String key, int *value_placeholder);

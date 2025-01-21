@@ -274,7 +274,7 @@ err_t u_list_delete_by_value(u_list *l, const void *target,
         item = item->next;
     }
 
-    return INDEX_OUT_OF_BOUNDS;  // Target not found
+    return NO_SUCH_ENTRY_IN_COLLECTION;  // Target not found
 }
 
 err_t u_list_const_traversion(const u_list *l,

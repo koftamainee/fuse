@@ -147,7 +147,7 @@ void logger_stop() {
     FILE* log_fout = NULL;
     for (i = 0; i < L.loggers_count; ++i) {
         log_fout = L.loggers[i].fp;
-        if (log_fout != stdout && log_fout != stderr) {
+        if (log_fout != stdout && log_fout != stderr && log_fout != NULL) {
             fclose(log_fout);
         }
     }

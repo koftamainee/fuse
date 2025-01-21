@@ -6,14 +6,6 @@
 #include "../include/hash_table.h"
 #include "../include/u_list.h"
 
-typedef enum { unary, binary } operator_type;
-
-typedef struct {
-    operator_type type;
-    int priority;
-    int (*func)(int, ...);
-} operator_t;
-
 err_t infix_to_postfix(const String infix_exp, int (*is_operand)(int c),
                        int (*is_operator)(const char *op, u_list *operators_ul),
                        u_list *operators_ht,

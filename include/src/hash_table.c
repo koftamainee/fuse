@@ -180,7 +180,7 @@ err_t hash_table_dispose(hash_table *ht, const void *key) {
     }
 
     size_t index = ht->hash(key, ht->key_size, ht->capacity);
-    err_t err;
+    err_t err = 0;
     hash_table_bucket search;
     u_list_node *node = NULL;
     u_list *bucket = ht->buckets[index];
@@ -190,7 +190,7 @@ err_t hash_table_dispose(hash_table *ht, const void *key) {
 
     if (bucket->size == 1) {
         err = u_list_delete_by_index(bucket, 0);
-        if (err != EXIT_SUCCESS || err != NO_SUCH_ENTRY_IN_COLLECTION) {
+        if (err != EXIT_SUCCESS && err != NO_SUCH_ENTRY_IN_COLLECTION) {
             return err;
         }
         if (err == NO_SUCH_ENTRY_IN_COLLECTION) {
@@ -198,7 +198,7 @@ err_t hash_table_dispose(hash_table *ht, const void *key) {
         }
     } else {
         err = u_list_delete_by_value(bucket, &search, ht->keys_comparer);
-        if (err != EXIT_SUCCESS || err != NO_SUCH_ENTRY_IN_COLLECTION) {
+        if (err != EXIT_SUCCESS && err != NO_SUCH_ENTRY_IN_COLLECTION) {
             return err;
         }
         if (err == NO_SUCH_ENTRY_IN_COLLECTION) {
@@ -215,12 +215,6 @@ err_t hash_table_dispose(hash_table *ht, const void *key) {
     err = hash_table_get_load_factor(ht, &load_factor);
     if (err) {
         return err;
-    }
-    if (load_factor < 0.25) {
-        err = hash_table_resize(ht, -HASH_TABLE_GROWTH_FACTOR);
-        if (err) {
-            return err;
-        }
     }
 
     return EXIT_SUCCESS;
