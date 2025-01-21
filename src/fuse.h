@@ -18,4 +18,5 @@ err_t fuse_start(CLIOptions *cli_opts);
 
 err_t create_ht_with_operators(hash_table *operators);
 
+err_t create_ht_with_real_names(hash_table *names);
 #endif

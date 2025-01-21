@@ -296,3 +296,47 @@ err_t create_ht_with_operators(hash_table *operators) {
 
     return EXIT_SUCCESS;
 }
+
+err_t create_ht_with_real_names(hash_table *names) {
+    if (names == NULL) {
+        log_fatal("passed ptr is NULL");
+        return DEREFERENCING_NULL_PTR;
+    }
+
+    err_t err = 0;
+    int i = 0;
+    String old = NULL, new = NULL;
+
+    char *operator_definitions[] = {"add",   "mult", "rem",   "and", "not",
+                                    "input", "=",    "sub",   "div", "pow",
+                                    "or",    "xor",  "output"};
+
+    size_t operator_count =
+        sizeof(operator_definitions) / sizeof(operator_definitions[0]);
+
+    for (i = 0; i < operator_count; ++i) {
+        old = string_from(operator_definitions[i]);
+        if (old == NULL) {
+            log_fatal("failed to init string");
+            return MEMORY_ALLOCATION_ERROR;
+        }
+        new = string_from(operator_definitions[i]);
+        if (new == NULL) {
+            log_fatal("failed to init string");
+            string_free(old);
+            return MEMORY_ALLOCATION_ERROR;
+        }
+        err = hash_table_set(names, &old, &new);
+        if (err) {
+            log_fatal("failed to set to hash table");
+            string_free(old);
+            string_free(new);
+            return err;
+        }
+
+        old = NULL;
+        new = NULL;
+    }
+
+    return EXIT_SUCCESS;
+}
