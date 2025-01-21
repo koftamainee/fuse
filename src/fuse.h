@@ -3,14 +3,20 @@
 
 #include "../include/cstring.h"
 #include "../include/errors.h"
+#include "../include/hash_table.h"
+#include "cli.h"
 
-// math section
-err_t convert_infix_to_postfix_notation(const String infix_expression,
-                                        int (*priority_mapper)(char c),
-                                        int (*characters_validator)(char c),
-                                        String *postfix_expression);
+typedef enum { unary, binary } operator_type;
 
-err_t calculate_postfix_expression(const String postfix_expression,
-                                   uint8_t base_assign, String *result);
+typedef struct {
+    operator_type type;
+    int priority;
+    err_t (*func)(int *, ...);
+} operator_t;
 
+err_t fuse_start(CLIOptions *cli_opts);
+
+err_t create_ht_with_operators(hash_table *operators);
+
+err_t create_ht_with_real_names(hash_table *names);
 #endif

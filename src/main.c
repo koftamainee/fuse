@@ -7,6 +7,7 @@
 #include "../include/errors.h"
 #include "../include/logger.h"
 #include "cli.h"
+#include "fuse.h"
 #include "menu.h"
 
 int main(int argc, char* argv[]) {
@@ -19,21 +20,19 @@ int main(int argc, char* argv[]) {
     clock_gettime(CLOCK_MONOTONIC, &start);
 
     err = parse_cli_arguments(argc, argv, &options);
-    if (err != 0 && err != UNKNOWN_CLI_ARGUMENT) {  // that is bad
-        string_free(options.input_file);
-        string_free(options.config_file);
+    if (err != EXIT_SUCCESS && err != INVALID_CLI_ARGUMENT) {  // that is bad
+        if (options.input_file != NULL) fclose(options.input_file);
+        if (options.config_file != NULL) fclose(options.config_file);
         time_total =
             (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;
-        fprintf(stderr, "Program ended with code %d in %.5f seconds", err,
-                time_total);
         return err;
     }
 
     if (!options.quiet_mode) {
         err = logger_start();
         if (err) {
-            string_free(options.input_file);
-            string_free(options.config_file);
+            if (options.input_file != NULL) fclose(options.input_file);
+            if (options.config_file != NULL) fclose(options.config_file);
             time_total = (end.tv_sec - start.tv_sec) +
                          (end.tv_nsec - start.tv_nsec) / 1e9;
             fprintf(stderr, "Program ended with code %d in %.5f seconds", err,
@@ -44,18 +43,20 @@ int main(int argc, char* argv[]) {
     }
 
     getlogin_r((char*)username, sizeof(username));
+    log_set_level(LOG_TRACE);
     log_info("Fuse started by %s", username);
 
     // now logger works
 
-    if (err == UNKNOWN_CLI_ARGUMENT) {
+    if (err == INVALID_CLI_ARGUMENT) {
         print_help();
-        string_free(options.input_file);
-        string_free(options.config_file);
+        if (options.input_file != NULL) fclose(options.input_file);
+        if (options.config_file != NULL) fclose(options.config_file);
         time_total =
             (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;
         log_info("Program ended with code %d in %.5f seconds", EXIT_SUCCESS,
                  time_total);
+        logger_stop();
         return err;
     }
 
@@ -65,60 +66,91 @@ int main(int argc, char* argv[]) {
 
     if (options.show_help) {
         print_help();
-        string_free(options.input_file);
-        string_free(options.config_file);
+        if (options.input_file != NULL) fclose(options.input_file);
+        if (options.config_file != NULL) fclose(options.config_file);
         time_total =
             (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;
         log_info("Program ended with code %d in %.5f seconds", EXIT_SUCCESS,
                  time_total);
+        logger_stop();
         return EXIT_SUCCESS;
     }
 
     if (options.show_version) {
         print_version();
-        string_free(options.input_file);
-        string_free(options.config_file);
+        if (options.input_file != NULL) fclose(options.input_file);
+        if (options.config_file != NULL) fclose(options.config_file);
         clock_gettime(CLOCK_MONOTONIC, &end);
         time_total =
             (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;
         log_info("Program ended with code %d in %.5f seconds", EXIT_SUCCESS,
                  time_total);
+        logger_stop();
         return EXIT_SUCCESS;
     }
 
     if (options.show_info) {
         print_info();
-        string_free(options.input_file);
-        string_free(options.config_file);
+        if (options.input_file != NULL) fclose(options.input_file);
+        if (options.config_file != NULL) fclose(options.config_file);
         clock_gettime(CLOCK_MONOTONIC, &end);
         time_total =
             (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;
         log_info("Program ended with code %d in %.5f seconds", EXIT_SUCCESS,
                  time_total);
+        logger_stop();
 
         return EXIT_SUCCESS;
     }
 
     if (options.interactive_menu) {
         err = start_interactive_menu(&options);
-        if (err) {
-            // TODO
-        }
+        if (options.input_file != NULL) fclose(options.input_file);
+        if (options.config_file != NULL) fclose(options.config_file);
+        clock_gettime(CLOCK_MONOTONIC, &end);
+        time_total =
+            (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;
+        log_info("Program ended with code %d in %.5f seconds", EXIT_SUCCESS,
+                 time_total);
+        logger_stop();
+        return err;
     }
 
     if (argc == 1) {  // user didn't specify any args, starting interactive menu
         err = start_interactive_menu(&options);
-        if (err) {
-            // TODO
-        }
+        if (options.input_file != NULL) fclose(options.input_file);
+        if (options.config_file != NULL) fclose(options.config_file);
+        clock_gettime(CLOCK_MONOTONIC, &end);
+        time_total =
+            (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;
+        log_info("Program ended with code %d in %.5f seconds", EXIT_SUCCESS,
+                 time_total);
+        logger_stop();
+        return err;
     }
 
-    string_free(options.input_file);
-    string_free(options.config_file);
+    log_trace("Starting interpreter");
+
+    err = fuse_start(&options);
+    if (err) {
+        if (options.input_file != NULL) fclose(options.input_file);
+        if (options.config_file != NULL) fclose(options.config_file);
+        clock_gettime(CLOCK_MONOTONIC, &end);
+        time_total =
+            (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;
+        log_info("Program ended with code %d in %.5f seconds", EXIT_SUCCESS,
+                 time_total);
+        logger_stop();
+        return err;
+    }
+
+    if (options.input_file != NULL) fclose(options.input_file);
+    if (options.config_file != NULL) fclose(options.config_file);
     clock_gettime(CLOCK_MONOTONIC, &end);
     time_total =
         (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;
     log_info("Program ended with code %d in %.5f seconds", EXIT_SUCCESS,
              time_total);
+    logger_stop();
     return EXIT_SUCCESS;
 }

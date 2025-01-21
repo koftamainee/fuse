@@ -7,11 +7,9 @@ CERT_FILE = certificate.txt
 ANALYZER = fuse-analyzer
 ANALYZER_RS = fuse-analyzer-rs
 
-
 CC = cc
 
-CFLAGS = -Wall -Wextra -O2 -std=c99 -g -fsanitize=address -fsanitize=leak -fno-omit-frame-pointer
-# all errors, extra errors, 02 optimization level, memory acess sanitaixer, memory leaks sanitizer, save frame pointers
+CFLAGS = -std=c99 -o2 -g3 -lm 
 
 SRCS += $(wildcard $(SRC_DIR)/*.c)
 SRCS += $(wildcard $(INCLUDE_DIR)/src/*.c)

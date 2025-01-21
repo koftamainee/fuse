@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <time.h>
 
-#include "../include/errors.h"
+#include "errors.h"
 
 typedef enum {
     LOG_IO,
@@ -34,5 +34,7 @@ void vlog_log(log_level level, const char *file, int line, const char *fmt,
               va_list ap);
 
 err_t logger_start();
+
+void logger_stop();
 
 #endif

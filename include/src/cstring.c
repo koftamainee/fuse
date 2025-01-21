@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "../errors.h"
+
 String string_init() {
     String_metadata_t *str_p = (String_metadata_t *)malloc(
         (sizeof(char) * STRING_BASE_CAPACITY) + (sizeof(String_metadata_t)));
@@ -11,6 +13,7 @@ String string_init() {
         return NULL;
     }
     str_p->length = 0;
+
     str_p->capacity = STRING_BASE_CAPACITY;
     return __cstring_base_to_string(str_p);
 }
@@ -35,7 +38,7 @@ void string_free(const String str) {
     free((void *)__cstring_string_to_base(str));
 }
 
-err_t string_add(String *str, char c) {
+int string_add(String *str, char c) {
     if (str == NULL || *str == NULL) {
         return DEREFERENCING_NULL_PTR;
     }
@@ -58,8 +61,9 @@ err_t string_add(String *str, char c) {
 }
 
 void string_print(String str) {
-    size_t i;
+    int i;
     if (string_len(str) == 0) {
+        printf("(nil)");
         return;
     }
     for (i = 0; i < string_len(str); ++i) {
@@ -67,8 +71,9 @@ void string_print(String str) {
     }
 }
 
-err_t string_cmp(String str1, String str2) {
-    size_t len1, len2, i;
+int string_cmp(String str1, String str2) {
+    size_t len1, len2;
+    int i;
     len1 = string_len(str1);
     len2 = string_len(str2);
 
@@ -87,8 +92,9 @@ err_t string_cmp(String str1, String str2) {
     return 0;
 }
 
-err_t string_cmp_c(const String str1, const char *str2) {
-    size_t len1, len2, i;
+int string_cmp_c(const String str1, const char *str2) {
+    size_t len1, len2;
+    int i;
     len1 = string_len(str1);
     len2 = strlen(str2);
 
@@ -107,8 +113,9 @@ err_t string_cmp_c(const String str1, const char *str2) {
     return 0;
 }
 
-err_t string_lex_cmp(String str1, String str2) {
-    size_t len1, len2, min, i;
+int string_lex_cmp(String str1, String str2) {
+    size_t len1, len2, min;
+    int i;
     len1 = string_len(str1);
     len2 = string_len(str2);
 
@@ -121,12 +128,13 @@ err_t string_lex_cmp(String str1, String str2) {
     return 0;
 }
 
-err_t string_cpy(String *dest, const String *src) {
-    err_t err;
-    size_t length = string_len(*src);
+int string_cpy(String *dest, const String *src) {
+    int err;
+    int length;
     if (dest == NULL || src == NULL) {
         return DEREFERENCING_NULL_PTR;
     }
+    length = string_len(*src);
     if (string_cap(*dest) < length) {
         err = string_grow(dest, length);
         if (err) {
@@ -138,9 +146,9 @@ err_t string_cpy(String *dest, const String *src) {
     return EXIT_SUCCESS;
 }
 
-err_t string_cpy_c(String *dest, const char *src) {
-    err_t err;
-    size_t length = strlen(src);
+int string_cpy_c(String *dest, const char *src) {
+    int err;
+    int length = strlen(src);
     if (dest == NULL || src == NULL) {
         return DEREFERENCING_NULL_PTR;
     }
@@ -156,9 +164,9 @@ err_t string_cpy_c(String *dest, const char *src) {
     return EXIT_SUCCESS;
 }
 
-err_t string_cat(String *dest, const String *src) {
-    err_t err;
-    size_t length = string_len(*src) + string_len(*dest);
+int string_cat(String *dest, const String *src) {
+    int err;
+    int length = string_len(*src) + string_len(*dest);
     if (dest == NULL || src == NULL) {
         return DEREFERENCING_NULL_PTR;
     }
@@ -173,9 +181,9 @@ err_t string_cat(String *dest, const String *src) {
     return EXIT_SUCCESS;
 }
 
-err_t string_cat_c(String *dest, const char *src) {
-    err_t err;
-    size_t length = strlen(src) + string_len(*dest);
+int string_cat_c(String *dest, const char *src) {
+    int err;
+    int length = strlen(src) + string_len(*dest);
     if (dest == NULL || src == NULL) {
         return DEREFERENCING_NULL_PTR;
     }
@@ -193,7 +201,6 @@ err_t string_cat_c(String *dest, const char *src) {
 }
 
 int string_str(String haystack, String needle) {
-    int found;
     size_t needle_len = string_len(needle);
     size_t haystack_len = string_len(haystack);
 
@@ -202,7 +209,7 @@ int string_str(String haystack, String needle) {
     }
 
     for (size_t i = 0; i <= haystack_len - needle_len; ++i) {
-        found = 1;
+        int found = 1;
         for (size_t j = 0; j < needle_len; ++j) {
             if (haystack[i + j] != needle[j]) {
                 found = 0;
@@ -218,7 +225,6 @@ int string_str(String haystack, String needle) {
 }
 
 int string_str_c(String haystack, const char *needle) {
-    int found;
     size_t needle_len = strlen(needle);
     size_t haystack_len = string_len(haystack);
 
@@ -227,7 +233,7 @@ int string_str_c(String haystack, const char *needle) {
     }
 
     for (size_t i = 0; i <= haystack_len - needle_len; ++i) {
-        found = 1;
+        int found = 1;
         for (size_t j = 0; j < needle_len; ++j) {
             if (haystack[i + j] != needle[j]) {
                 found = 0;
@@ -242,7 +248,31 @@ int string_str_c(String haystack, const char *needle) {
     return -1;
 }
 
-err_t string_grow(String *str, size_t new_size) {
+int string_c_str(const char *haystack, const String needle) {
+    size_t needle_len = string_len(needle);
+    size_t haystack_len = strlen(haystack);
+
+    if (needle_len > haystack_len) {
+        return -1;
+    }
+
+    for (size_t i = 0; i <= haystack_len - needle_len; ++i) {
+        int found = 1;
+        for (size_t j = 0; j < needle_len; ++j) {
+            if (haystack[i + j] != needle[j]) {
+                found = 0;
+                break;
+            }
+        }
+        if (found) {
+            return i;
+        }
+    }
+
+    return -1;
+}
+
+int string_grow(String *str, size_t new_size) {
     if (str == NULL || *str == NULL) {
         return DEREFERENCING_NULL_PTR;
     }
@@ -266,7 +296,32 @@ err_t string_grow(String *str, size_t new_size) {
     for_realloc->capacity = new_size;
     if (new_size < current_size) {
         for_realloc->length = new_size;
+        for_realloc->capacity = new_size;
     }
 
+    return EXIT_SUCCESS;
+}
+
+void string_fprint(FILE *fout, const String str) {
+    size_t i;
+    if (string_len(str) == 0) {
+        return;
+    }
+    for (i = 0; i < string_len(str); ++i) {
+        fputc(str[i], fout);
+    }
+}
+
+err_t string_add_str(String *str, const char *s) {
+    if (str == NULL || s == NULL) {
+        return DEREFERENCING_NULL_PTR;
+    }
+    while (*s) {
+        err_t err = string_add(str, *s);
+        if (err) {
+            return err;
+        }
+        s++;
+    }
     return EXIT_SUCCESS;
 }

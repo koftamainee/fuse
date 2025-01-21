@@ -1,5 +1,6 @@
 #include "cli.h"
 
+#include <ctype.h>
 #include <limits.h>
 #include <stdarg.h>
 #include <stdint.h>
@@ -13,6 +14,8 @@
 
 err_t parse_cli_arguments(int argc, char *argv[], CLIOptions *options) {
     int i;
+    FILE *file;
+    char cli_command[BUFSIZ];
 
     if (options == NULL || argv == NULL) {
         return DEREFERENCING_NULL_PTR;
@@ -25,9 +28,26 @@ err_t parse_cli_arguments(int argc, char *argv[], CLIOptions *options) {
         } else if (strcmp(argv[i], "-t") == 0) {
             options->preserve_temp_files = 1;
         } else if (strcmp(argv[i], "-f") == 0 && i + 1 < argc) {
-            options->input_file = string_from(argv[++i]);
+            // options->input_file = string_from(argv[++i]);
+            file = fopen(argv[++i], "r");
+            if (file == NULL) {
+                fprintf(stderr, "failed to open the file\n");
+
+                return OPENING_THE_FILE_ERROR;
+            }
+            options->input_file = file;
         } else if (strcmp(argv[i], "-c") == 0 && i + 1 < argc) {
-            options->config_file = string_from(argv[++i]);
+            // options->config_file = string_from(argv[++i]);
+            file = fopen(argv[++i], "r");
+            if (file == NULL) {
+                fprintf(stderr, "failed to open the file\n");
+                return OPENING_THE_FILE_ERROR;
+            }
+            options->config_file = file;
+
+            sprintf(cli_command, "cp %s /etc/fuse/fuseconfig", argv[i]);
+            system(cli_command);
+
         } else if (strcmp(argv[i], "-d") == 0) {
             options->log_user_interaction = 1;
         } else if ((strcmp(argv[i], "-h") == 0) ||
@@ -57,7 +77,7 @@ err_t parse_cli_arguments(int argc, char *argv[], CLIOptions *options) {
             options->base_assign = (uint8_t)atoi(argv[++i]);
         } else {
             fprintf(stderr, "%s: Unknown CLI argument.\n", argv[i]);
-            return UNKNOWN_CLI_ARGUMENT;
+            return INVALID_FLAG;
         }
     }
     return EXIT_SUCCESS;
@@ -101,7 +121,10 @@ void print_version() {
         PROJECT_VERSION);
 }
 
-void clear_screen() { system("clear"); }
+void clear_screen() {
+    system("clear");
+    return;
+}
 
 err_t read_int_from_user(int *num) {
     char buf[32];  // 32 bytes buf for int32_t
@@ -145,10 +168,12 @@ err_t read_uint8_t_from_user(uint8_t *num) {
         return DEREFERENCING_NULL_PTR;
     }
 
-    if (!fgets(buf, sizeof(buf), stdin)) {
-        log_error("error while reading udata from stdin");
-        return ERROR_READING_FROM_STDIN;
-    }
+    do {
+        if (!fgets(buf, sizeof(buf), stdin)) {
+            log_error("error while reading udata from stdin");
+            return ERROR_READING_FROM_STDIN;
+        }
+    } while (isspace(buf[0]));
 
     value = strtol(buf, &endptr, 10);
     log_io("Input: %ld", value);

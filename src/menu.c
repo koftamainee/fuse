@@ -6,6 +6,7 @@
 
 #include "../include/logger.h"
 #include "cli.h"
+#include "fuse.h"
 
 void show_menu() {
     clear_screen();
@@ -31,6 +32,7 @@ err_t start_interactive_menu(CLIOptions* options) {
     uint8_t input_number = 0;
     int exit_from_loop = 0, continue_from_loop = 0;
     uint8_t c = 0;
+    err_t err = 0;
     log_info("Interactive menu started");
     options->interactive_menu = 1;
 
@@ -47,6 +49,10 @@ err_t start_interactive_menu(CLIOptions* options) {
                 break;
 
             case 1:
+                err = fuse_start(options);
+                if (err) {
+                    return err;
+                }
                 break;
 
             case 2:

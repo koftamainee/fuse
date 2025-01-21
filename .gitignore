@@ -59,3 +59,5 @@ fuse.log
 /logs/
 
 /fuse-analyzer-rs/target/
+config
+test_file
