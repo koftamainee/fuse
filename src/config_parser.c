@@ -1,5 +1,6 @@
 #include "config_parser.h"
 
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -113,7 +114,7 @@ err_t parse_config_file(FILE *config_file, execution_options *options) {
             }
             for (i = 0; i < string_len(instruction); ++i) {
                 c = instruction[i];
-                if (c == ' ') {  // border principle
+                if (c == ' ' && string_len(old_op) > 0) {
                     replacement = string_init();
                     if (replacement == NULL) {
                         log_fatal("failed to allocate memory");
@@ -122,6 +123,9 @@ err_t parse_config_file(FILE *config_file, execution_options *options) {
                         hash_table_free(real_names);
                         return MEMORY_ALLOCATION_ERROR;
                     }
+                    for (; instruction[i] == ' ' || instruction[i] == '\t';
+                         ++i);
+                    i--;
                     err = string_grow(&replacement,
                                       string_len(instruction) - i - 1);
                     if (err) {
@@ -138,14 +142,16 @@ err_t parse_config_file(FILE *config_file, execution_options *options) {
                     break;
 
                 } else {
-                    err = string_add(&old_op, c);
-                    if (err) {
-                        log_fatal("failed add to string");
-                        string_free(instruction);
-                        string_free(replacement);
-                        string_free(old_op);
-                        hash_table_free(real_names);
-                        return err;
+                    if (c != ' ') {
+                        err = string_add(&old_op, c);
+                        if (err) {
+                            log_fatal("failed add to string");
+                            string_free(instruction);
+                            string_free(replacement);
+                            string_free(old_op);
+                            hash_table_free(real_names);
+                            return err;
+                        }
                     }
                 }
             }
@@ -155,9 +161,38 @@ err_t parse_config_file(FILE *config_file, execution_options *options) {
             __cstring_string_to_base(replacement)->length--;
             __cstring_string_to_base(old_op)->length--;
 
+            if (string_len(replacement) == 0) {
+                log_fatal(
+                    "Invalid syntax in config file occured. Synonim for \"%s\" "
+                    "doesn't specified",
+                    old_op);
+                string_free(old_op);
+                string_free(replacement);
+                string_free(instruction);
+                hash_table_free(real_names);
+                return INVALID_SYNTAX;
+            }
+
+            for (i = 0; i < string_len(replacement); ++i) {
+                if (isspace(replacement[i])) {
+                    log_fatal(
+                        "Invalid syntax occured. Synonim should not contain "
+                        "spaces: \"%s\".",
+                        replacement);
+                    string_free(old_op);
+                    string_free(replacement);
+                    string_free(instruction);
+                    hash_table_free(real_names);
+                    return INVALID_SYNTAX;
+                }
+            }
+
             err = hash_table_get(real_names, &old_op, (void **)&for_real_name);
             if (err) {
-                log_error("failed to get from hash table");
+                log_error(
+                    "Invalid operator name: "
+                    "\"%s\". \"%s\"",
+                    old_op, replacement);
                 string_free(old_op);
                 string_free(replacement);
                 string_free(instruction);
@@ -169,7 +204,7 @@ err_t parse_config_file(FILE *config_file, execution_options *options) {
                 hash_table_get(options->operators, for_real_name, (void **)&op);
             if (err) {
                 if (err == KEY_NOT_FOUND) {
-                    log_fatal("invalid operator in config file: %s",
+                    log_fatal("invalid operator in config file: \"%s\"",
                               *for_real_name);
                     string_free(old_op);
                     string_free(replacement);

@@ -32,6 +32,7 @@ err_t start_interactive_menu(CLIOptions* options) {
     uint8_t input_number = 0;
     int exit_from_loop = 0, continue_from_loop = 0;
     uint8_t c = 0;
+    char s_ans[BUFSIZ];
     err_t err = 0;
     log_info("Interactive menu started");
     options->interactive_menu = 1;
@@ -49,16 +50,42 @@ err_t start_interactive_menu(CLIOptions* options) {
                 break;
 
             case 1:
+                clear_screen();
                 err = fuse_start(options);
                 if (err) {
                     return err;
                 }
+                logprintf("Press enter to continue...");
+                getchar();
                 break;
 
             case 2:
+                logprintf("Input filename: ");
+                scanf("%s", s_ans);
+                options->input_file = fopen(s_ans, "r");
+                if (options->input_file == NULL) {
+                    log_fatal("Error opening a file");
+                    return OPENING_THE_FILE_ERROR;
+                }
+                printf("Done.\n");
+                getchar();
+                logprintf("Press enter to continue...");
+                getchar();
                 break;
 
             case 3:
+                logprintf("Input filename: ");
+                scanf("%s", s_ans);
+                options->config_file = fopen(s_ans, "r");
+                if (options->config_file == NULL) {
+                    log_fatal("Error opening a file");
+                    return OPENING_THE_FILE_ERROR;
+                }
+                printf("Done.\n");
+                getchar();
+                logprintf("Press enter to continue...");
+                getchar();
+                break;
                 break;
 
             case 4:
