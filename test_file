@@ -1,4 +1,0 @@
-var_1 = 1F4;
-var_2 = mult(var_2, 4);
-Var3 = add(div(var_2, 5) , rem(var_1, 2));
-print(Var3);

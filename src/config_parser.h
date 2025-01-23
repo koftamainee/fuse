@@ -14,7 +14,10 @@ typedef struct execution_options {
     hash_table *operators;
 } execution_options;
 
-err_t parse_config_file(FILE *config_file, execution_options *options);
+err_t parse_config_file(FILE *config_file, execution_options *options,
+                        String *equation_operator_placeholder,
+                        String *input_operator_placeholder,
+                        String *output_operator_placeholder);
 
 err_t set_operator(hash_table *operators, String old_rep, String new_rep);
 

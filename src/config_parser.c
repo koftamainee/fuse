@@ -1,5 +1,6 @@
 #include "config_parser.h"
 
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -19,8 +20,14 @@ void real_names_bucket_destructor(void *a) {
     free(b);
 }
 
-err_t parse_config_file(FILE *config_file, execution_options *options) {
-    if (config_file == NULL) {
+err_t parse_config_file(FILE *config_file, execution_options *options,
+                        String *equation_operator_placeholder,
+                        String *input_operator_placeholder,
+                        String *output_operator_placeholder) {
+    if (config_file == NULL || options == NULL ||
+        equation_operator_placeholder == NULL ||
+        input_operator_placeholder == NULL ||
+        output_operator_placeholder == NULL) {
         log_fatal("passed ptr is NULL");
         return DEREFERENCING_NULL_PTR;
     }
@@ -34,6 +41,8 @@ err_t parse_config_file(FILE *config_file, execution_options *options) {
     operator_t *op = NULL, *to_replace_op = NULL;
     hash_table *real_names = NULL;
     String *for_real_name = NULL, new = NULL, old = NULL;
+    String equation_operator = NULL, output_operator = NULL,
+           input_operator = NULL;
 
     log_info("starting parsing config file");
 
@@ -45,8 +54,33 @@ err_t parse_config_file(FILE *config_file, execution_options *options) {
         return err;
     }
 
+    equation_operator = string_from("=");
+    if (equation_operator == NULL) {
+        log_fatal("failed to allocate memory");
+        hash_table_free(real_names);
+        return MEMORY_ALLOCATION_ERROR;
+    }
+    input_operator = string_from("input");
+    if (equation_operator == NULL) {
+        log_fatal("failed to allocate memory");
+        string_free(equation_operator);
+        hash_table_free(real_names);
+        return MEMORY_ALLOCATION_ERROR;
+    }
+    output_operator = string_from("output");
+    if (equation_operator == NULL) {
+        log_fatal("failed to allocate memory");
+        string_free(equation_operator);
+        string_free(input_operator);
+        hash_table_free(real_names);
+        return MEMORY_ALLOCATION_ERROR;
+    }
+
     err = create_ht_with_real_names(real_names);
     if (err) {
+        string_free(equation_operator);
+        string_free(input_operator);
+        string_free(output_operator);
         hash_table_free(real_names);
         return err;
     }
@@ -57,6 +91,9 @@ err_t parse_config_file(FILE *config_file, execution_options *options) {
         if (instruction == NULL) {
             log_fatal("memory allocation error");
             hash_table_free(real_names);
+            string_free(equation_operator);
+            string_free(input_operator);
+            string_free(output_operator);
             return MEMORY_ALLOCATION_ERROR;
         }
         while (*current) {
@@ -77,6 +114,9 @@ err_t parse_config_file(FILE *config_file, execution_options *options) {
                     log_fatal("failed add to string");
                     string_free(instruction);
                     hash_table_free(real_names);
+                    string_free(equation_operator);
+                    string_free(input_operator);
+                    string_free(output_operator);
                     return err;
                 }
             }
@@ -109,19 +149,28 @@ err_t parse_config_file(FILE *config_file, execution_options *options) {
                 log_fatal("memory alloc failed");
                 string_free(instruction);
                 hash_table_free(real_names);
+                string_free(equation_operator);
+                string_free(input_operator);
+                string_free(output_operator);
                 return MEMORY_ALLOCATION_ERROR;
             }
             for (i = 0; i < string_len(instruction); ++i) {
                 c = instruction[i];
-                if (c == ' ') {  // border principle
+                if (c == ' ' && string_len(old_op) > 0) {
                     replacement = string_init();
                     if (replacement == NULL) {
                         log_fatal("failed to allocate memory");
                         string_free(instruction);
                         string_free(old_op);
+                        string_free(equation_operator);
                         hash_table_free(real_names);
+                        string_free(input_operator);
+                        string_free(output_operator);
                         return MEMORY_ALLOCATION_ERROR;
                     }
+                    for (; instruction[i] == ' ' || instruction[i] == '\t';
+                         ++i);
+                    i--;
                     err = string_grow(&replacement,
                                       string_len(instruction) - i - 1);
                     if (err) {
@@ -129,6 +178,9 @@ err_t parse_config_file(FILE *config_file, execution_options *options) {
                         string_free(instruction);
                         string_free(old_op);
                         hash_table_free(real_names);
+                        string_free(equation_operator);
+                        string_free(input_operator);
+                        string_free(output_operator);
                         return err;
                     }
                     memcpy(replacement, instruction + i + 1,
@@ -138,14 +190,21 @@ err_t parse_config_file(FILE *config_file, execution_options *options) {
                     break;
 
                 } else {
-                    err = string_add(&old_op, c);
-                    if (err) {
-                        log_fatal("failed add to string");
-                        string_free(instruction);
-                        string_free(replacement);
-                        string_free(old_op);
-                        hash_table_free(real_names);
-                        return err;
+                    if (c != ' ') {
+                        err = string_add(&old_op, c);
+                        if (err) {
+                            string_free(input_operator);
+                            string_free(output_operator);
+                            log_fatal("failed add to string");
+                            string_free(instruction);
+                            string_free(replacement);
+                            string_free(old_op);
+                            hash_table_free(real_names);
+                            string_free(equation_operator);
+                            string_free(input_operator);
+                            string_free(output_operator);
+                            return err;
+                        }
                     }
                 }
             }
@@ -155,13 +214,50 @@ err_t parse_config_file(FILE *config_file, execution_options *options) {
             __cstring_string_to_base(replacement)->length--;
             __cstring_string_to_base(old_op)->length--;
 
-            err = hash_table_get(real_names, &old_op, (void **)&for_real_name);
-            if (err) {
-                log_error("failed to get from hash table");
+            if (string_len(replacement) == 0) {
+                log_fatal(
+                    "Invalid syntax in config file occured. Synonim for \"%s\" "
+                    "doesn't specified",
+                    old_op);
                 string_free(old_op);
                 string_free(replacement);
                 string_free(instruction);
                 hash_table_free(real_names);
+                string_free(equation_operator);
+                string_free(input_operator);
+                string_free(output_operator);
+                return INVALID_SYNTAX;
+            }
+
+            for (i = 0; i < string_len(replacement); ++i) {
+                if (isspace(replacement[i]) && replacement[i] != '(' &&
+                    replacement[i] != ')' && replacement[i] != ',') {
+                    log_fatal("Invalid syntax occured. INvalid synonim: %s",
+                              replacement);
+                    string_free(old_op);
+                    string_free(replacement);
+                    string_free(instruction);
+                    hash_table_free(real_names);
+                    string_free(equation_operator);
+                    string_free(input_operator);
+                    string_free(output_operator);
+                    return INVALID_SYNTAX;
+                }
+            }
+
+            err = hash_table_get(real_names, &old_op, (void **)&for_real_name);
+            if (err) {
+                log_error(
+                    "Invalid operator name: "
+                    "\"%s\". \"%s\"",
+                    old_op, replacement);
+                string_free(old_op);
+                string_free(replacement);
+                string_free(instruction);
+                hash_table_free(real_names);
+                string_free(equation_operator);
+                string_free(input_operator);
+                string_free(output_operator);
                 return err;
             }
 
@@ -169,12 +265,15 @@ err_t parse_config_file(FILE *config_file, execution_options *options) {
                 hash_table_get(options->operators, for_real_name, (void **)&op);
             if (err) {
                 if (err == KEY_NOT_FOUND) {
-                    log_fatal("invalid operator in config file: %s",
+                    log_fatal("invalid operator in config file: \"%s\"",
                               *for_real_name);
                     string_free(old_op);
                     string_free(replacement);
                     string_free(instruction);
                     hash_table_free(real_names);
+                    string_free(equation_operator);
+                    string_free(input_operator);
+                    string_free(output_operator);
                     return INVALID_SYNTAX;
                 } else {
                     log_fatal("failed to get from hash table: %zu", err);
@@ -183,6 +282,9 @@ err_t parse_config_file(FILE *config_file, execution_options *options) {
                 string_free(replacement);
                 string_free(instruction);
                 hash_table_free(real_names);
+                string_free(equation_operator);
+                string_free(input_operator);
+                string_free(output_operator);
                 return err;
             }
 
@@ -196,6 +298,9 @@ err_t parse_config_file(FILE *config_file, execution_options *options) {
                 string_free(replacement);
                 string_free(instruction);
                 hash_table_free(real_names);
+                string_free(equation_operator);
+                string_free(input_operator);
+                string_free(output_operator);
                 return err;
             }
 
@@ -206,11 +311,57 @@ err_t parse_config_file(FILE *config_file, execution_options *options) {
                 string_free(replacement);
                 string_free(instruction);
                 hash_table_free(real_names);
+                string_free(equation_operator);
+                string_free(input_operator);
+                string_free(output_operator);
                 return MEMORY_ALLOCATION_ERROR;
             }
             to_replace_op->func = op->func;
             to_replace_op->type = op->type;
             to_replace_op->priority = op->priority;
+
+            if (string_cmp_c(old_op, "=") == 0) {
+                err = string_cpy(&equation_operator, &replacement);
+                if (err) {
+                    log_fatal("faileed to cpy string");
+                    string_free(old_op);
+                    string_free(replacement);
+                    string_free(instruction);
+                    hash_table_free(real_names);
+                    string_free(equation_operator);
+                    string_free(input_operator);
+                    string_free(output_operator);
+                    return err;
+                }
+            }
+            if (string_cmp_c(old_op, "input") == 0) {
+                err = string_cpy(&input_operator, &replacement);
+                if (err) {
+                    log_fatal("faileed to cpy string");
+                    string_free(old_op);
+                    string_free(replacement);
+                    string_free(instruction);
+                    hash_table_free(real_names);
+                    string_free(equation_operator);
+                    string_free(input_operator);
+                    string_free(output_operator);
+                    return err;
+                }
+            }
+            if (string_cmp_c(old_op, "output") == 0) {
+                err = string_cpy(&output_operator, &replacement);
+                if (err) {
+                    log_fatal("faileed to cpy string");
+                    string_free(old_op);
+                    string_free(replacement);
+                    string_free(instruction);
+                    hash_table_free(real_names);
+                    string_free(equation_operator);
+                    string_free(input_operator);
+                    string_free(output_operator);
+                    return err;
+                }
+            }
 
             old = string_from(old_op);
             new = string_from(replacement);
@@ -224,6 +375,9 @@ err_t parse_config_file(FILE *config_file, execution_options *options) {
                 string_free(replacement);
                 string_free(instruction);
                 hash_table_free(real_names);
+                string_free(equation_operator);
+                string_free(input_operator);
+                string_free(output_operator);
                 return err;
             }
 
@@ -235,6 +389,9 @@ err_t parse_config_file(FILE *config_file, execution_options *options) {
                 string_free(replacement);
                 string_free(instruction);
                 hash_table_free(real_names);
+                string_free(equation_operator);
+                string_free(input_operator);
+                string_free(output_operator);
                 return err;
             }
 
@@ -246,6 +403,9 @@ err_t parse_config_file(FILE *config_file, execution_options *options) {
                 string_free(replacement);
                 string_free(instruction);
                 hash_table_free(real_names);
+                string_free(equation_operator);
+                string_free(input_operator);
+                string_free(output_operator);
                 return err;
             }
 
@@ -258,6 +418,9 @@ err_t parse_config_file(FILE *config_file, execution_options *options) {
         instruction = NULL;
     }
 
+    *equation_operator_placeholder = equation_operator;
+    *output_operator_placeholder = output_operator;
+    *input_operator_placeholder = input_operator;
     log_info("Config file parsing finished");
 
     hash_table_free(real_names);
