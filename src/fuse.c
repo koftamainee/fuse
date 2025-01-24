@@ -11,8 +11,20 @@
 #include "../include/logger.h"
 #include "../include/types.h"
 #include "config_parser.h"
+#include "debugger.h"
 #include "infix_notation.h"
 #include "postfix_notation.h"
+
+int isspace_c(int c) {
+    int ret = isspace(c);
+    if (ret) {
+        return ret;
+    }
+    if (c == '\n' || c == '\0' || c == -1 || c == 8) {
+        return 1;
+    }
+    return 0;
+}
 
 err_t fuse_not(int *res, ...) {
     if (res == NULL) {
@@ -337,9 +349,9 @@ err_t create_ht_with_real_names(hash_table *names) {
     int i = 0;
     String old = NULL, new = NULL;
 
-    char *operator_definitions[] = {"add",   "mult", "rem",   "and", "not",
-                                    "input", "=",    "sub",   "div", "pow",
-                                    "or",    "xor",  "output"};
+    char *operator_definitions[] = {"add",   "mult", "rem",    "and", "not",
+                                    "input", "=",    "sub",    "div", "pow",
+                                    "or",    "xor",  "output", "("};
 
     size_t operator_count =
         sizeof(operator_definitions) / sizeof(operator_definitions[0]);
@@ -382,7 +394,7 @@ err_t execution_start(CLIOptions *cli_opts, execution_options *exec_opts,
     char line[BUFSIZ];
     // trie *variables = NULL;  // TODO !!1!!1!1!!!1!
     hash_table *variables = NULL;
-    char *current;
+    char current;
     char prev = 'a';
     String instruction = NULL;
     err_t err = 0;
@@ -412,73 +424,96 @@ err_t execution_start(CLIOptions *cli_opts, execution_options *exec_opts,
         return MEMORY_ALLOCATION_ERROR;
     }
 
-    while (fgets(line, sizeof(line), cli_opts->input_file)) {
-        if (strncmp(line, "#BREAKPOINT", strlen("#BREAKPOINT"))) {
-            // TODO: start debugging
-        }
-        current = line;
-        while (*current != '\0' && *current != '\n') {
-            if (*current == ';') {
-                err = parse_instruction(instruction, cli_opts, exec_opts,
-                                        variables, equation_operator,
-                                        input_operator, output_operator);
+    // while (fgets(line, sizeof(line), cli_opts->input_file)) {
+    while (!feof(cli_opts->input_file)) {
+        current = fgetc(cli_opts->input_file);
+        // if (strncmp(line, "#BREAKPOINT", strlen("#BREAKPOINT"))) {
+        //     // TODO: start debugging
+        // }
+        if (current == ';') {
+            err = parse_instruction(instruction, cli_opts, exec_opts, variables,
+                                    equation_operator, input_operator,
+                                    output_operator);
+            if (err) {
+                string_free(instruction);
+                // trie_free(variables);
+                hash_table_free(variables);
+                return err;
+            }
+            string_free(instruction);
+            instruction = NULL;
+            instruction = string_init();
+            if (instruction == NULL) {
+                log_fatal("failed to allocate memory");
+                // trie_free(variables);
+                hash_table_free(variables);
+                return MEMORY_ALLOCATION_ERROR;
+            }
+        } else {
+            if (current == '[') {
+                comment_value++;
+                prev = current;
+                current++;
+                continue;
+            }
+            if (current == ']') {
+                comment_value--;
+                if (comment_value < 0) {
+                    log_fatal("UJASHO");
+                    return INVALID_SYNTAX;
+                }
+                prev = current;
+                current++;
+                continue;
+            }
+
+            if (comment_value == 0 &&
+                (!isspace_c(current) || !isspace_c(prev))) {
+                if (current == '#') {
+                    fgets(line, sizeof(line), cli_opts->input_file);
+                    if (strcmp(line, "BREAKPOINT\n") == 0 ||
+                        strcmp(line, "BREAKPOINT") == 0) {
+                        err = start_debugger(variables);
+                        if (err) {
+                            string_free(instruction);
+                            string_free(equation_operator);
+                            string_free(input_operator);
+                            string_free(output_operator);
+                            hash_table_free(variables);
+                            return err;
+                        }
+                    }
+                    continue;
+                }
+                if (isspace_c(current)) {
+                    if (string_len(instruction) == 0) {
+                        prev = current;
+                        continue;
+                    }
+                    current = ' ';
+                }
+                err = string_add(&instruction, current);
                 if (err) {
+                    log_fatal("failed add to string");
                     string_free(instruction);
                     // trie_free(variables);
                     hash_table_free(variables);
                     return err;
                 }
-                string_free(instruction);
-                instruction = NULL;
-                instruction = string_init();
-                if (instruction == NULL) {
-                    log_fatal("failed to allocate memory");
-                    // trie_free(variables);
-                    hash_table_free(variables);
-                    return MEMORY_ALLOCATION_ERROR;
-                }
-            } else {
-                if (*current == '#') {
-                    break;
-                }
-                if (*current == '[') {
-                    comment_value++;
-                    prev = *current;
-                    current++;
-                    continue;
-                }
-                if (*current == ']') {
-                    comment_value--;
-                    prev = *current;
-                    current++;
-                    continue;
-                }
-                if (comment_value == 0 &&
-                    (!isspace(*current) || !isspace(prev))) {
-                    err = string_add(&instruction, *current);
-                    if (err) {
-                        log_fatal("failed add to string");
-                        string_free(instruction);
-                        // trie_free(variables);
-                        hash_table_free(variables);
-                        return err;
-                    }
-                }
-            }
-            prev = *current;
-            current++;
-        }
-        if (string_len(instruction) > 0) {
-            for (i = 0; i < string_len(instruction); ++i) {
-                if (!isspace(instruction[i])) {
-                    log_fatal("invalid syntax occured");
-                    // trie_free(variables);
-                    hash_table_free(variables);
-                    string_free(instruction);
-                    return INVALID_SYNTAX;
-                }
             }
         }
+        prev = current;
+    }
+    if (string_len(instruction) > 0) {
+        // for (i = 0; i < string_len(instruction); ++i) {
+        //     if (!isspace_c(instruction[i])) {
+        log_fatal("invalid syntax occured: %s", instruction);
+        // trie_free(variables);
+        hash_table_free(variables);
+        string_free(instruction);
+        return INVALID_SYNTAX;
+        // }
+        // }
     }
 
     if (comment_value != 0) {
@@ -490,7 +525,6 @@ err_t execution_start(CLIOptions *cli_opts, execution_options *exec_opts,
     }
 
     string_free(instruction);
-    // trie_free(variables);
     hash_table_free(variables);
 
     return EXIT_SUCCESS;
@@ -513,12 +547,14 @@ err_t parse_instruction(String instruction, CLIOptions *cli_opts,
     err_t err = 0;
     size_t token_len = 0, instruction_len = 0;
     String tmp = NULL;
+    int parsed = 0;
 
     token = string_init();
     if (token == NULL) {
         log_fatal("failed to allocate memory");
         return MEMORY_ALLOCATION_ERROR;
     }
+    err = string_add(&instruction, ' ');
 
     lvalue = string_init();
     if (lvalue == NULL) {
@@ -568,6 +604,7 @@ err_t parse_instruction(String instruction, CLIOptions *cli_opts,
                     rvalue = tmp;
                     tmp = NULL;
                 }
+                parsed = 1;
                 err = parse_expression(lvalue, rvalue, cli_opts, exec_opts,
                                        variables);
                 if (err) {
@@ -578,6 +615,7 @@ err_t parse_instruction(String instruction, CLIOptions *cli_opts,
             }
 
             if (string_cmp(token, output_operator) == 0) {
+                parsed = 1;
                 err =
                     handle_output(instruction, cli_opts, exec_opts, variables);
                 if (err) {
@@ -585,12 +623,21 @@ err_t parse_instruction(String instruction, CLIOptions *cli_opts,
                     return err;
                 }
             } else if (string_cmp(token, input_operator) == 0) {
+                parsed = 1;
                 err = handle_input(instruction, cli_opts, exec_opts, variables);
                 if (err) {
                     string_free(token);
                     return err;
                 }
             }
+
+            // if (!parsed && string_len(instruction) > 0) {
+            //     log_fatal("invalid instruction syntax: %s", instruction);
+            //     string_free(lvalue);
+            //     string_free(rvalue);
+            //     string_free(token);
+            //     return INVALID_SYNTAX;
+            // }  // mb REDO
 
             string_free(token);
             token = NULL;
@@ -601,6 +648,7 @@ err_t parse_instruction(String instruction, CLIOptions *cli_opts,
                 string_free(rvalue);
                 return MEMORY_ALLOCATION_ERROR;
             }
+
         } else {
             err = string_add(&token, current);
             if (err) {
@@ -632,7 +680,11 @@ err_t parse_expression(String lvalue, String rvalue, CLIOptions *cli_opts,
 
     switch (exec_opts->ex_t) {
         case prefix:
-            assert("Prefix expression isn't done yet :(");
+            err = execute_prefix_expression(lvalue, rvalue, cli_opts, exec_opts,
+                                            variables);
+            if (err) {
+                return err;
+            }
             break;
         case infix:
             err = execute_infix_expression(lvalue, rvalue, cli_opts, exec_opts,
@@ -667,6 +719,68 @@ err_t handle_input(String instruction, CLIOptions *cli_opts,
         log_fatal("passed ptr is NULL");
     }
 
+    int i = 0;
+    char current = 0;
+    String token = NULL;
+    int *value_placeholder;
+    err_t err = 0;
+    char user_ans[BUFSIZ];
+    int result;
+
+    token = string_init();
+    if (token == NULL) {
+        log_fatal("failed to alloc memor");
+        return MEMORY_ALLOCATION_ERROR;
+    }
+    for (i = 0; i < string_len(instruction); ++i) {
+        if (isspace_c(instruction[i])) {
+            break;
+        }
+    }
+    for (i = i + 1; i < string_len(instruction); ++i) {
+        if (isspace_c(instruction[i])) {
+            break;
+        }
+        err = string_add(&token, instruction[i]);
+        if (err) {
+            log_fatal("failed add to string");
+            string_free(token);
+            return err;
+        }
+    }
+    for (i = i + 1; i < string_len(instruction); ++i) {
+        if (!isspace_c(instruction[i])) {
+            log_fatal("invalid instruction: %s", instruction);
+            string_free(token);
+            return INVALID_SYNTAX;
+        }
+    }
+
+    err = string_add(&token, '\0');
+    if (err) {
+        log_fatal("failed to add to string");
+        string_free(token);
+        return err;
+    }
+    __cstring_string_to_base(token)->length--;
+
+    printf("Enter value for %s variable in %d counting system: ", token,
+           cli_opts->base_input);
+    scanf("%s", user_ans);
+    err = catoi(user_ans, cli_opts->base_input, &result);
+    if (err) {
+        log_fatal("failed to parse string to int");
+        string_free(token);
+        return err;
+    }
+
+    err = hash_table_set(variables, &token, &result);
+    if (err) {
+        log_fatal("failed to set to hash table");
+        string_free(token);
+        return err;
+    }
+
     return EXIT_SUCCESS;
 }
 err_t handle_output(String instruction, CLIOptions *cli_opts,
@@ -687,33 +801,28 @@ err_t handle_output(String instruction, CLIOptions *cli_opts,
         log_fatal("failed to alloc memor");
         return MEMORY_ALLOCATION_ERROR;
     }
-
-    if (exec_opts->ex_t == postfix) {
-        for (i = 0; i < string_len(instruction); ++i) {
-            if (isspace(instruction[i])) {
-                break;
-            }
-            err = string_add(&token, instruction[i]);
-            if (err) {
-                log_fatal("failed add to string");
-                string_free(token);
-                return err;
-            }
+    for (i = 0; i < string_len(instruction); ++i) {
+        if (isspace_c(instruction[i])) {
+            break;
         }
-
-    } else {
-        for (i = 0; i < string_len(instruction); ++i) {
-            if (isspace(instruction[i])) {
-                break;
-            }
+    }
+    for (i = i + 1; i < string_len(instruction); ++i) {
+        if (isspace_c(instruction[i])) {
+            break;
         }
-        for (i = i + 1; i < string_len(instruction); ++i) {
-            err = string_add(&token, instruction[i]);
-            if (err) {
-                log_fatal("failed add to string");
-                string_free(token);
-                return err;
-            }
+        err = string_add(&token, instruction[i]);
+        if (err) {
+            log_fatal("failed add to string");
+            string_free(token);
+            return err;
+        }
+    }
+
+    for (i = i + 1; i < string_len(instruction); ++i) {
+        if (!isspace_c(instruction[i])) {
+            log_fatal("invalid instruction: %s", instruction);
+            string_free(token);
+            return INVALID_SYNTAX;
         }
     }
 
@@ -724,7 +833,7 @@ err_t handle_output(String instruction, CLIOptions *cli_opts,
         return err;
     }
     if (err == KEY_NOT_FOUND) {
-        log_fatal("Invalid output variable");
+        log_fatal("Invalid output variable: %s", token);
         string_free(token);
         return INVALID_SYNTAX;
     }
@@ -735,7 +844,9 @@ err_t handle_output(String instruction, CLIOptions *cli_opts,
         return INVALID_SYNTAX;
     }
 
-    printf("%s\n", to_output);
+    string_print(token);
+    printf(" variable value in %d counting system: %s\n", cli_opts->base_output,
+           to_output);
 
     string_free(token);
     free(to_output);

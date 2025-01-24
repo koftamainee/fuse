@@ -40,4 +40,6 @@ err_t handle_input(String instruction, CLIOptions *cli_opts,
                    execution_options *exec_opts, hash_table *variables);
 err_t handle_output(String instruction, CLIOptions *cli_opts,
                     execution_options *exec_opts, hash_table *variables);
+
+int isspace_c(int c);
 #endif

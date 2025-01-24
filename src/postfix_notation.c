@@ -17,7 +17,7 @@ err_t execute_postfix_expression(String lvalue, String rvalue,
         return DEREFERENCING_NULL_PTR;
     }
 
-    String valid_expression = NULL, for_spaces = NULL;
+    String valid_expression = NULL, for_spaces = NULL, for_ht = NULL;
     err_t err = 0;
     int i = 0, result;
     char current = 0, prev = 52;
@@ -78,12 +78,50 @@ err_t execute_postfix_expression(String lvalue, String rvalue,
     string_free(for_spaces);
     for_spaces = NULL;
 
-    printf("\"");
-    string_print(valid_expression);
-    printf("\"\n");
+    err = string_add(&valid_expression, ' ');
+    if (err) {
+        log_fatal("failed to add to string");
+        string_free(valid_expression);
+        return err;
+    }
 
     err = calculate_postfix_expression(valid_expression, &result,
                                        exec_opts->operators, variables);
+    if (err) {
+        string_free(valid_expression);
+        return err;
+    }
+
+    for (i = 0; i < string_len(lvalue); ++i) {
+        if (!is_operand(lvalue[i])) {
+            log_error("invalid lvalue: %s", lvalue);
+            string_free(valid_expression);
+            return INVALID_SYNTAX;
+        }
+    }
+
+    for (i = 0; i < string_len(lvalue); ++i) {
+        if (!is_operand(lvalue[i])) {
+            log_error("invalid lvalue: %s", lvalue);
+            return INVALID_SYNTAX;
+        }
+    }
+
+    for_ht = string_init();
+    err = string_cpy(&for_ht, &lvalue);
+    if (err) {
+        log_fatal("failed to cpy string");
+        string_free(valid_expression);
+        return err;
+    }
+
+    err = hash_table_set(variables, &for_ht, &result);
+    if (err) {
+        log_fatal("failed to set to hash table");
+        string_free(for_ht);
+        string_free(valid_expression);
+        return err;
+    }
 
     string_free(valid_expression);
 
@@ -124,7 +162,6 @@ err_t calculate_postfix_expression(const String postfix_exp,
 
     for (i = 0; i < string_len(postfix_exp); ++i) {
         pe = postfix_exp[i];
-
         // border principle
         if (pe == ' ') {
             if (string_len(token) == 0) {
@@ -215,7 +252,7 @@ err_t calculate_postfix_expression(const String postfix_exp,
                 //         token);
                 //         // stack_free(st);
                 //         // string_free(token);
-                //         // return err;
+                //         / return err;
                 //         printf("Please enter value for '");
                 //         string_print(token);
                 //         printf("' variable: ");
@@ -423,8 +460,9 @@ err_t calculate_postfix_expression(const String postfix_exp,
 
     if (!stack_is_empty(st)) {
         log_error(
-            "evaluation ended, stack is not empty, invalid operators and "
-            "operands combination");
+            "evaluation ended, stack is not empty (%zu), invalid operators and "
+            "operands combination, %s",
+            st->size, postfix_exp);
         string_free(token);
         stack_free(st);
         return INVALID_OPERATIONS;

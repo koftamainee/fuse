@@ -103,6 +103,22 @@ int cutoa(unsigned int num, int base, char **ans) {
     return OK;
 }
 
+int is_valid_char_for_base(char c, int base) {
+    char lower_c;
+    if (base == 10) {
+        return isdigit(c);
+    } else if (base <= 36 && base >= 2) {
+        if (isdigit(c)) {
+            return c - '0' < base;
+        } else if (isalpha(c)) {
+            lower_c = tolower(c);
+            return lower_c - 'a' + 10 < base;
+        }
+    }
+
+    return INVALID_CHAR;
+}
+
 int catoi(char const *str, int base, int *ans) {
     int num = 0;
     int digit = 0;
@@ -118,10 +134,15 @@ int catoi(char const *str, int base, int *ans) {
     }
 
     while (*str) {
+        if (!is_valid_char_for_base(*str, base)) {
+            return INVALID_CHAR;
+        }
         if (isalpha(*str)) {
             digit = tolower(*str) - 'a' + 10;
         } else if (isdigit(*str)) {
             digit = *str - '0';
+        } else {
+            return INVALID_CHAR;
         }
         num = num * base + digit;
         str++;

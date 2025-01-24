@@ -37,5 +37,6 @@ typedef int err_t;
 #define UINT8_T_OVERFLOW (30)
 #define INVALID_SYNTAX (31)
 #define INVALID_CHAR (32)
+#define KILL_PROGRAM (33)
 
 #endif

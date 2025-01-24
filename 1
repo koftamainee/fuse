@@ -1,0 +1,233 @@
+#include "prefix_notation.h"
+
+#include <ctype.h>
+#include <stdlib.h>
+
+#include "../include/logger.h"
+#include "../include/stack.h"
+#include "../include/types.h"
+#include "postfix_notation.h"
+
+void prefix_notation_string_destructor(void *s) {
+    String *str = s;
+    string_free(*str);
+    free(str);
+}
+
+err_t prefix_to_postfix(const String prefix_exp, int (*is_operand)(int c),
+                        hash_table *operators_ht, String *postfix_exp) {
+    if (prefix_exp == NULL || is_operand == NULL || operators_ht == NULL ||
+        postfix_exp == NULL) {
+        log_error("passed NULL ptr");
+        return DEREFERENCING_NULL_PTR;
+    }
+
+    stack *st = NULL;
+    String reversed = NULL;
+    err_t err = 0;
+    int i = 0;
+    char pe = 0;
+    String token = NULL;
+    operator_t *op = NULL;
+
+    err = stack_init(&st, sizeof(String *), prefix_notation_string_destructor);
+    if (err) {
+        log_fatal("failed to init stack");
+        return err;
+    }
+
+    reversed = string_clone(prefix_exp);
+    if (reversed == NULL) {
+        log_fatal("failed to allocate memory");
+        stack_free(st);
+        return MEMORY_ALLOCATION_ERROR;
+    }
+    token = string_init();
+    if (token == NULL) {
+        log_fatal("failed to allocate memory");
+
+        stack_free(st);
+        string_free(reversed);
+        return MEMORY_ALLOCATION_ERROR;
+    }
+    for (i = string_len(reversed) - 1; i >= 0; --i) {
+        pe = reversed[i];
+        if (isspace_c(pe)) {
+            if (string_len(token) == 0) {
+                continue;
+            }
+            err = string_reverse(token);
+            if (err) {
+                log_error("failed to reverse string");
+                stack_free(st);
+                string_free(reversed);
+                string_free(token);
+                return err;
+            }
+
+            string_print(token);
+            printf("\n");
+
+            string_free(token);
+            token = NULL;
+            token = string_init();
+            if (token == NULL) {
+                log_fatal("failed to allocate memory");
+                stack_free(st);
+                string_free(reversed);
+                string_free(token);
+                return MEMORY_ALLOCATION_ERROR;
+            }
+        } else {
+            err = string_add(&token, pe);
+            if (err) {
+                log_fatal("failed to add to string");
+                stack_free(st);
+                string_free(reversed);
+                string_free(token);
+                return err;
+            }
+        }
+    }
+
+    stack_free(st);
+    string_free(reversed);
+
+    return EXIT_SUCCESS;
+}
+
+err_t execute_prefix_expression(String lvalue, String rvalue,
+                                CLIOptions *cli_opts,
+                                execution_options *exec_opts,
+                                hash_table *variables) {
+    if (lvalue == NULL || rvalue == NULL || cli_opts == NULL ||
+        exec_opts == NULL || variables == NULL) {
+        log_fatal("passed ptr is NULL");
+        return DEREFERENCING_NULL_PTR;
+    }
+
+    String valid_expression = NULL, for_spaces = NULL, for_ht = NULL;
+    err_t err = 0;
+    int i = 0, result;
+    char current = 0, prev = 52;
+    String postfix_exp = NULL;
+
+    valid_expression = string_init();
+    if (valid_expression == NULL) {
+        log_fatal("memory allocation error");
+        return MEMORY_ALLOCATION_ERROR;
+    }
+
+    for (i = 0; i < string_len(rvalue); ++i) {
+        current = rvalue[i];
+
+        if ((current == ',' || current == '(' || current == ')')) {
+            if (prev != ' ') {
+                if (string_len(valid_expression)) {
+                    err = string_add(&valid_expression, ' ');
+                    if (err) {
+                        log_fatal("failed to add to string");
+                        string_free(valid_expression);
+                        return err;
+                    }
+                }
+            }
+        } else {
+            err = string_add(&valid_expression, current);
+            if (err) {
+                log_fatal("failed to add to string");
+                string_free(valid_expression);
+                return err;
+            }
+        }
+        prev = current;
+    }
+
+    for_spaces = valid_expression;
+    valid_expression = NULL;
+    valid_expression = string_init();
+    if (valid_expression == NULL) {
+        log_fatal("failed to allocate memory");
+        string_free(for_spaces);
+        return MEMORY_ALLOCATION_ERROR;
+    }
+    prev = ' ';
+    for (i = 0; i < string_len(for_spaces); ++i) {
+        current = for_spaces[i];
+        if (!(isspace(current) && isspace(prev))) {
+            err = string_add(&valid_expression, current);
+            if (err) {
+                log_fatal("failed to add to string");
+                string_free(valid_expression);
+                return err;
+            }
+        }
+        prev = current;
+    }
+
+    string_free(for_spaces);
+    for_spaces = NULL;
+
+    err = string_add(&valid_expression, ' ');
+    if (err) {
+        log_fatal("failed to add to string");
+        string_free(valid_expression);
+        return err;
+    }
+    err = prefix_to_postfix(valid_expression, is_operand, exec_opts->operators,
+                            &postfix_exp);
+    if (err) {
+        string_free(valid_expression);
+        return err;
+    }
+
+    // printf("DEBUG: ");
+    // string_print(postfix_exp);
+    // printf("\n");
+
+    // err = calculate_postfix_expression(postfix_exp, &result,
+    //                                    exec_opts->operators, variables);
+    // if (err) {
+    //     string_free(postfix_exp);
+    //     string_free(valid_expression);
+    //     return err;
+    // }
+    //
+    // for (i = 0; i < string_len(lvalue); ++i) {
+    //     if (!is_operand(lvalue[i])) {
+    //         log_error("invalid lvalue: %s", lvalue);
+    //         string_free(valid_expression);
+    //         return INVALID_SYNTAX;
+    //     }
+    // }
+    //
+    // for (i = 0; i < string_len(lvalue); ++i) {
+    //     if (!is_operand(lvalue[i])) {
+    //         log_error("invalid lvalue: %s", lvalue);
+    //         string_free(postfix_exp);
+    //         return INVALID_SYNTAX;
+    //     }
+    // }
+    //
+    // for_ht = string_init();
+    // err = string_cpy(&for_ht, &lvalue);
+    // if (err) {
+    //     log_fatal("failed to cpy string");
+    //     string_free(valid_expression);
+    //     string_free(postfix_exp);
+    //     return err;
+    // }
+    //
+    // err = hash_table_set(variables, &for_ht, &result);
+    // if (err) {
+    //     log_fatal("failed to set to hash table");
+    //     string_free(for_ht);
+    //     string_free(valid_expression);
+    //     return err;
+    // }
+    //
+    // string_free(postfix_exp);
+    // string_free(valid_expression);
+
+    return EXIT_SUCCESS;
+}

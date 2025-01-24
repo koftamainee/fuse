@@ -369,9 +369,16 @@ err_t execute_infix_expression(String lvalue, String rvalue,
             return INVALID_SYNTAX;
         }
     }
+    for (i = 0; i < string_len(lvalue); ++i) {
+        if (!is_operand(lvalue[i])) {
+            log_error("invalid lvalue: %s", lvalue);
+            return INVALID_SYNTAX;
+        }
+    }
 
     for_ht = string_init();
     string_cpy(&for_ht, &lvalue);
+    // TODO: errors
 
     err = hash_table_set(variables, &for_ht, &result);
     if (err) {

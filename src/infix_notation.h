@@ -15,4 +15,9 @@ err_t execute_infix_expression(String lvalue, String rvalue,
 
 err_t infix_to_postfix(const String infix_exp, int (*is_operand)(int c),
                        hash_table *operators_ht, String *postfix_exp);
+
+err_t execute_prefix_expression(String lvalue, String rvalue,
+                                CLIOptions *cli_opts,
+                                execution_options *exec_opts,
+                                hash_table *variables);
 #endif

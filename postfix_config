@@ -1,3 +1,4 @@
 ()op
-
-= $
+left=
+output print
+input scan

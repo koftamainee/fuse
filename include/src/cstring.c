@@ -325,3 +325,55 @@ err_t string_add_str(String *str, const char *s) {
     }
     return EXIT_SUCCESS;
 }
+
+int string_reverse(String str) {
+    if (str == NULL) {
+        return DEREFERENCING_NULL_PTR;
+    }
+
+    size_t len = string_len(str);
+    size_t i = 0;
+
+    if (len < 2) {
+        return EXIT_SUCCESS;
+    }
+
+    for (i = 0; i < len / 2; ++i) {
+        char temp = str[i];
+        str[i] = str[len - i - 1];
+        str[len - i - 1] = temp;
+    }
+
+    return EXIT_SUCCESS;
+}
+
+String string_clone(String str) {
+    if (str == NULL) {
+        return NULL;
+    }
+
+    err_t err = 0;
+    int i;
+
+    String new = string_init();
+    if (new == NULL) {
+        return NULL;
+    }
+
+    err = string_grow(&new, string_len(str));
+    if (err) {
+        string_free(new);
+        return NULL;
+    }
+
+    __cstring_string_to_base(new)->length = 0;
+
+    for (i = 0; i < string_len(str); ++i) {
+        err = string_add(&new, str[i]);
+        if (err) {
+            string_free(new);
+            return NULL;
+        }
+    }
+    return new;
+}
