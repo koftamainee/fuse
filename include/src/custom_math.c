@@ -43,7 +43,7 @@ int generate_fibonacci_row(unsigned int until, unsigned int **ans,
 
 int generate_fibonacci_row_upto_n(int num_elements, int *fib_sequence,
                                   int *element_count) {
-    int first = 0, second = 1;
+    int first = 1, second = 2;
     *element_count = 0;
 
     if (num_elements >= 1) {

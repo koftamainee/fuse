@@ -11,6 +11,7 @@
 #include "../include/logger.h"
 #include "../include/types.h"
 #include "config_parser.h"
+#include "debugger.h"
 #include "infix_notation.h"
 #include "postfix_notation.h"
 
@@ -469,7 +470,20 @@ err_t execution_start(CLIOptions *cli_opts, execution_options *exec_opts,
             if (comment_value == 0 &&
                 (!isspace_c(current) || !isspace_c(prev))) {
                 if (current == '#') {
-                    break;
+                    fgets(line, sizeof(line), cli_opts->input_file);
+                    if (strcmp(line, "BREAKPOINT\n") == 0 ||
+                        strcmp(line, "BREAKPOINT") == 0) {
+                        err = start_debugger(variables);
+                        if (err) {
+                            string_free(instruction);
+                            string_free(equation_operator);
+                            string_free(input_operator);
+                            string_free(output_operator);
+                            hash_table_free(variables);
+                            return err;
+                        }
+                    }
+                    continue;
                 }
                 if (isspace_c(current)) {
                     if (string_len(instruction) == 0) {
