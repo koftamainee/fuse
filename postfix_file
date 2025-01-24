@@ -1,4 +1,13 @@
-var_1 $ 1F4;
-var_2 $ (var_2, 4)mult;
-Var3 $ ((var_2         , 5)div , (var_1, 2) rem) add;
-print(Var3);
+scan var_1;
+var_2 = (var_1, 4)mult;
+Var3 = ((var_2, 5)div , (var_1, 2) rem) add;
+
+
+
+print Var3;
+
+
+
+
+
+

@@ -1,4 +1,6 @@
-110 -> var_1;
+1F4 ->
+var_1; [#]
 var_1 mult 4 -> var_2;
-(var_2 div 5) add (var_1 div 2) -> Var3;
+(var_2 div 5) add (var_1 rem 2) -> Var3;
 output Var3;
+#
