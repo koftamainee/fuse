@@ -19,7 +19,7 @@ int isspace_c(int c) {
     if (ret) {
         return ret;
     }
-    if (c == '\n' || c == '\0' || c == -1) {
+    if (c == '\n' || c == '\0' || c == -1 || c == 8) {
         return 1;
     }
     return 0;
@@ -540,6 +540,7 @@ err_t parse_instruction(String instruction, CLIOptions *cli_opts,
         log_fatal("failed to allocate memory");
         return MEMORY_ALLOCATION_ERROR;
     }
+    err = string_add(&instruction, ' ');
 
     lvalue = string_init();
     if (lvalue == NULL) {
@@ -622,7 +623,7 @@ err_t parse_instruction(String instruction, CLIOptions *cli_opts,
             //     string_free(rvalue);
             //     string_free(token);
             //     return INVALID_SYNTAX;
-            // } // mb REDO
+            // }  // mb REDO
 
             string_free(token);
             token = NULL;
@@ -665,7 +666,11 @@ err_t parse_expression(String lvalue, String rvalue, CLIOptions *cli_opts,
 
     switch (exec_opts->ex_t) {
         case prefix:
-            assert("Prefix expression isn't done yet :(");
+            err = execute_prefix_expression(lvalue, rvalue, cli_opts, exec_opts,
+                                            variables);
+            if (err) {
+                return err;
+            }
             break;
         case infix:
             err = execute_infix_expression(lvalue, rvalue, cli_opts, exec_opts,
@@ -719,11 +724,21 @@ err_t handle_input(String instruction, CLIOptions *cli_opts,
         }
     }
     for (i = i + 1; i < string_len(instruction); ++i) {
+        if (isspace_c(instruction[i])) {
+            break;
+        }
         err = string_add(&token, instruction[i]);
         if (err) {
             log_fatal("failed add to string");
             string_free(token);
             return err;
+        }
+    }
+    for (i = i + 1; i < string_len(instruction); ++i) {
+        if (!isspace_c(instruction[i])) {
+            log_fatal("invalid instruction: %s", instruction);
+            string_free(token);
+            return INVALID_SYNTAX;
         }
     }
 
@@ -778,11 +793,22 @@ err_t handle_output(String instruction, CLIOptions *cli_opts,
         }
     }
     for (i = i + 1; i < string_len(instruction); ++i) {
+        if (isspace_c(instruction[i])) {
+            break;
+        }
         err = string_add(&token, instruction[i]);
         if (err) {
             log_fatal("failed add to string");
             string_free(token);
             return err;
+        }
+    }
+
+    for (i = i + 1; i < string_len(instruction); ++i) {
+        if (!isspace_c(instruction[i])) {
+            log_fatal("invalid instruction: %s", instruction);
+            string_free(token);
+            return INVALID_SYNTAX;
         }
     }
 

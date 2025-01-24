@@ -46,4 +46,7 @@ int string_grow(String *str, size_t new_size);
 
 int string_add_str(String *str, const char *s);
 
+int string_reverse(String str);
+String string_clone(String str);
+
 #endif

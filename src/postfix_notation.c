@@ -108,8 +108,12 @@ err_t execute_postfix_expression(String lvalue, String rvalue,
     }
 
     for_ht = string_init();
-    string_cpy(&for_ht, &lvalue);
-    // TODO: errors
+    err = string_cpy(&for_ht, &lvalue);
+    if (err) {
+        log_fatal("failed to cpy string");
+        string_free(valid_expression);
+        return err;
+    }
 
     err = hash_table_set(variables, &for_ht, &result);
     if (err) {
