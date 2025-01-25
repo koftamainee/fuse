@@ -284,6 +284,7 @@ err_t create_ht_with_operators(hash_table *operators) {
 
     err_t err = 0;
     String representation = NULL;
+    int i = 0;
 
     struct {
         const char *representation;
@@ -302,7 +303,7 @@ err_t create_ht_with_operators(hash_table *operators) {
     size_t operator_count =
         sizeof(operator_definitions) / sizeof(operator_definitions[0]);
 
-    for (size_t i = 0; i < operator_count; ++i) {
+    for (i = 0; i < operator_count; ++i) {
         operator_t *op = (operator_t *)malloc(sizeof(operator_t));
         if (op == NULL) {
             log_error("Memory allocation for operator '%s' failed",
@@ -473,7 +474,9 @@ err_t execution_start(CLIOptions *cli_opts, execution_options *exec_opts,
                     fgets(line, sizeof(line), cli_opts->input_file);
                     if (strcmp(line, "BREAKPOINT\n") == 0 ||
                         strcmp(line, "BREAKPOINT") == 0) {
-                        err = start_debugger(variables);
+                        if (cli_opts->debug_mode) {
+                            err = start_debugger(variables);
+                        }
                         if (err) {
                             string_free(instruction);
                             string_free(equation_operator);

@@ -1,6 +1,6 @@
 #ifndef PROJECT_VERSION_H_
 #define PROJECT_VERSION_H_
 
-#define PROJECT_VERSION ("1.0.2")
+#define PROJECT_VERSION ("1.0.3")
 
 #endif  // !PROJECT_VERSION_H_
