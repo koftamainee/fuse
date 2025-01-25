@@ -196,14 +196,14 @@ err_t debugger_change_variable(hash_table *variables) {
     scanf("%s", buf);
     err = catoi(buf, 16, &result);
     if (err) {
-        log_fatal("failed to parse int from string");
+        printf("Failed to parse int from string\n");
         string_free(name);
-        return err;
+        return EXIT_SUCCESS;
     }
 
     err = hash_table_dispose(variables, &name);
     if (err != EXIT_SUCCESS && err != KEY_NOT_FOUND) {
-        log_fatal("failed to dispose from hash table");
+        log_fatal("Failed to dispose from hash table");
         string_free(name);
         return err;
     }

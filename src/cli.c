@@ -67,7 +67,8 @@ err_t parse_cli_arguments(int argc, char *argv[], CLIOptions *options) {
             options->quiet_mode = 1;
         } else if (strcmp(argv[i], "-t") == 0) {
             options->preserve_temp_files = 1;
-        } else if (strcmp(argv[i], "--debug") == 0) {
+        } else if (strcmp(argv[i], "--debug") == 0 ||
+                   (strcmp(argv[i], "/debug") == 0)) {
             options->debug_mode = 1;
         } else if (strcmp(argv[i], "--base_input") == 0 && i + 1 < argc) {
             options->base_input = (uint8_t)atoi(argv[++i]);
